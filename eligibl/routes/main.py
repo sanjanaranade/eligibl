@@ -1,11 +1,12 @@
 """Welcome, coordinator, screening, and health routes."""
 
 from uuid import UUID
+import hashlib
 
 from flask import Blueprint, current_app, jsonify, render_template, request
 
 from ..budget import load_limits
-from ..config import api_key_found
+from ..config import REPO_ROOT, api_key_found
 from ..db import usage_totals_today
 from ..agents.protocol_parser import SOURCE_PATH, parse_protocol
 from ..agents import screener
@@ -17,9 +18,13 @@ from ..budget import BudgetExceeded
 from ..db import (
     coordinator_candidates,
     coordinator_detail,
+    consume_screening_rate_limit,
+    daily_budget_blocked_today,
     get_candidate_messages,
     get_email_drafts,
     get_safety_events,
+    safety_event_counts,
+    record_safety_event,
     get_screening_session,
     record_coordinator_action,
     recorded_criterion_ids,
@@ -30,6 +35,7 @@ from ..db import (
 
 
 main_bp = Blueprint("main", __name__)
+SAFETY_LOG_PATH = REPO_ROOT / "logs" / "safety.jsonl"
 
 
 @main_bp.app_context_processor
@@ -50,7 +56,12 @@ def coordinator():
     candidates = coordinator_candidates(current_app.config["DATABASE"])
     usage = usage_totals_today(current_app.config["DATABASE"], load_limits()["timezone"])
     stats = weekly_funnel_stats(current_app.config["DATABASE"], load_limits()["timezone"])
-    return render_template("coordinator.html", candidates=candidates, usage=usage, budget=load_limits()["daily_budget_usd"], analytics=stats)
+    limits = load_limits()
+    return render_template(
+        "coordinator.html", candidates=candidates, usage=usage,
+        budget=limits["daily_budget_usd"], analytics=stats,
+        budget_pause=daily_budget_blocked_today(current_app.config["DATABASE"], limits["timezone"]),
+    )
 
 
 @main_bp.post("/api/coordinator/insights/weekly")
@@ -111,7 +122,29 @@ def coordinator_safety():
     """Render the recent safety-event audit list."""
     limits = load_limits()
     usage = usage_totals_today(current_app.config["DATABASE"], limits["timezone"])
-    return render_template("coordinator_simple.html", heading="Safety log", description="Recent safety events recorded by the application.", active="Safety log", events=get_safety_events(current_app.config["DATABASE"]), usage=usage, budget=limits["daily_budget_usd"])
+    database = current_app.config["DATABASE"]
+    return render_template(
+        "coordinator_simple.html", heading="Safety log",
+        description="Defenses triggered by the screening demo, with truncated excerpts for review.",
+        active="Safety log", events=get_safety_events(database), event_counts=safety_event_counts(database),
+        usage=usage, budget=limits["daily_budget_usd"],
+    )
+
+
+def _ip_fingerprint() -> str:
+    """Hash the direct peer address for hourly throttling; never persist raw IPs."""
+    address = request.remote_addr or "unknown"
+    return hashlib.sha256(("eligibl-screen-rate:" + address).encode("utf-8")).hexdigest()
+
+
+def _log_screen_safety_event(event: str, limit_name: str, blocked: str, *, candidate_id: str | None = None, text: str = "") -> None:
+    """Persist a screen-rate/length event and a short offending-text excerpt."""
+    record_safety_event(
+        current_app.config["DATABASE"], SAFETY_LOG_PATH,
+        event=event, limit_name=limit_name,
+        details={"blocked": blocked, "offending_text": text[:180]},
+        agent="screen_guard", candidate_id=candidate_id,
+    )
 
 
 @main_bp.get("/api/coordinator/candidates")
@@ -215,11 +248,23 @@ def start_screening():
         return jsonify(error="Please confirm the demo consent statement before continuing."), 400
     if not api_key_found():
         return jsonify(error="Screening needs PORTKEY_API_KEY in .env in this project folder or its parent."), 503
+    if daily_budget_blocked_today(current_app.config["DATABASE"], load_limits()["timezone"]):
+        return jsonify(error="Screening is paused for today. Please try again tomorrow.", safety_pause=True), 429
+    limits = load_limits()
+    if not consume_screening_rate_limit(
+        current_app.config["DATABASE"], kind="start", candidate_id=None, ip_hash=_ip_fingerprint(),
+        interval_seconds=int(limits["message_interval_seconds"]),
+        hourly_max=int(limits["screenings_per_hour_per_ip"]),
+    ):
+        _log_screen_safety_event("rate_limit_blocked", "screenings_per_hour_per_ip", "A new screening was blocked by the hourly per-IP cap.")
+        return jsonify(error="Too many demo screenings were started from this connection. Please try again later."), 429
     try:
         protocol = parse_protocol()
         state = screener.start_screening(current_app.config["DATABASE"], first_name, protocol)
         return jsonify(state)
     except BudgetExceeded as exc:
+        if exc.limit_name == "daily_budget_usd":
+            return jsonify(error="Screening is paused for today. Please try again tomorrow.", safety_pause=True), 429
         return jsonify(error=f"The screening budget limit was reached ({exc.limit_name}). Please try again later."), 429
     except Exception:
         current_app.logger.exception("Unable to start synthetic screening")
@@ -249,6 +294,7 @@ def resume_screening(candidate_id: str):
         question_number=min(len(answered) + 1, len(criteria)),
         question_total=len(criteria),
         quick_replies=screener.quick_replies(current, last_assistant),
+        budget_paused=daily_budget_blocked_today(current_app.config["DATABASE"], load_limits()["timezone"]),
     )
 
 
@@ -264,15 +310,28 @@ def candidate_message(candidate_id: str):
     if not text.strip():
         return jsonify(error="Type a response before sending."), 400
     if len(text) > 800:
+        _log_screen_safety_event("message_length_blocked", "max_candidate_message_characters", "Message exceeded the 800-character limit before reaching the screener.", candidate_id=candidate_id, text=text)
         return jsonify(error="Messages are limited to 800 characters."), 413
     session_data = get_screening_session(current_app.config["DATABASE"], candidate_id)
     if session_data is None:
         return jsonify(error="Screening session not found."), 404
     if session_data["status"] != "in_progress":
         return resume_screening(candidate_id)
+    limits = load_limits()
+    if not consume_screening_rate_limit(
+        current_app.config["DATABASE"], kind="message", candidate_id=candidate_id,
+        ip_hash=_ip_fingerprint(), interval_seconds=int(limits["message_interval_seconds"]),
+        hourly_max=int(limits["screenings_per_hour_per_ip"]),
+    ):
+        _log_screen_safety_event("rate_limit_blocked", "message_interval_seconds", "A screening reply was throttled by the per-session two-second limit.", candidate_id=candidate_id, text=text)
+        return jsonify(error="Please wait 2 seconds before sending another answer."), 429
     try:
         return jsonify(screener.submit_candidate_message(current_app.config["DATABASE"], candidate_id, text))
     except BudgetExceeded as exc:
+        if exc.limit_name == "daily_budget_usd":
+            return jsonify(error="Screening is paused for today. Please try again tomorrow.", safety_pause=True), 429
+        if exc.limit_name in {"max_screening_turns_per_candidate", "max_tokens_per_candidate"}:
+            return jsonify(error="This screening has reached a safety limit and is paused. Please contact the study team."), 429
         return jsonify(error=f"Screening is paused because the {exc.limit_name} limit was reached."), 429
     except Exception:
         current_app.logger.exception("Unable to process synthetic candidate message")

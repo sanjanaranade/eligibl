@@ -28,8 +28,9 @@
     </section>
 
     <section id="screening-chat" class="chat-panel" hidden aria-label="Screening chat">
+      <p id="safety-notice" class="chat-safety-notice" role="status" hidden></p>
       <div class="chat-topline">
-        <div><p class="chat-kicker">Your screening chat</p><p id="progress-label" class="progress-label">Question 1 of 1</p></div>
+        <div><p class="chat-kicker">Your screening chat</p><p id="progress-label" class="progress-label">Question 1 of 1</p><span id="screening-status" class="chat-status" hidden>Flagged · coordinator review</span></div>
         <a href="{{ url_for('main.index') }}" class="chat-exit">Exit</a>
       </div>
       <div class="progress-track" role="progressbar" aria-label="Screening progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="progress-fill"></span></div>

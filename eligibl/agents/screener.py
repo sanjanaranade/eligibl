@@ -5,19 +5,24 @@ from __future__ import annotations
 import json
 import re
 import uuid
+from pathlib import Path
 from typing import Any
 
 from .. import db
 from ..budget import BudgetExceeded, load_limits
+from ..config import REPO_ROOT
 from ..llm import call_agent, compose_messages
 from .screening_tools import BMI_TOOL
 
 
 AGENT_NAME = "candidate_screener"
+SAFETY_LOG_PATH = REPO_ROOT / "logs" / "safety.jsonl"
 _CANDIDATE_PREFIX = "CANDIDATE_MESSAGE_JSON:"
 _ADVICE_REQUEST = re.compile(
-    r"\b(should i|can i (take|stop|start|use|change)|what should i|recommend|medical advice|what treatment|"
-    r"stop taking|start taking|change my dose|increase my dose|decrease my dose)\b",
+    r"\b(should i (take|stop|start|use|change|increase|decrease)\b.{0,50}\b(medicine|medication|drug|dose|treatment|supplement|melatonin|sleep aid)|"
+    r"can i (take|stop|start|use|change)\b.{0,50}\b(my|the|a|any)?\s*(medicine|medication|drug|dose|treatment|supplement|melatonin|sleep aid)|"
+    r"what should i do about\b.{0,50}\b(medicine|medication|drug|dose|treatment|symptom|condition|sleep)|"
+    r"recommend|medical advice|what treatment|stop taking|start taking|change my dose|increase my dose|decrease my dose)\b",
     re.IGNORECASE,
 )
 _UNSAFE_CLAIM = re.compile(
@@ -31,6 +36,14 @@ _MEDICAL_DIRECTIVE = re.compile(
     r"\b(you should (take|stop|start|change|increase|decrease)|"
     r"you need to (take|stop|start|change|increase|decrease))\b",
     re.IGNORECASE,
+)
+_PROMPT_INJECTION_PATTERNS = (
+    ("instruction_override", re.compile(r"\b(ignore|disregard)\s+previous\b", re.I)),
+    ("instruction_override", re.compile(r"\b(ignore|disregard|forget|override)\b.{0,80}\b(previous|prior|all|the)?\s*(instructions?|rules?|prompts?|system|polic(?:y|ies)|tools?)\b", re.I)),
+    ("system_prompt_request", re.compile(r"\b(system prompt|hidden prompt|developer instructions?)\b", re.I)),
+    ("identity_override", re.compile(r"\b(you are now|pretend (?:to be|you are)|act as|role[ -]?play|in character)\b", re.I)),
+    ("eligibility_manipulation", re.compile(r"\b(mark me|say that i am|declare me|make me)\b.{0,50}\b(eligible|qualified|a match)\b", re.I)),
+    ("other_candidate_request", re.compile(r"\b(other|another|previous|different) candidate\b|\b(other candidates?|someone else's)\b", re.I)),
 )
 
 SYSTEM_PROMPT = """You are Eligibl's warm, calm, plain-language clinical-study screener. Your sole task is to collect a candidate's answers to the supplied study checklist, one question at a time.
@@ -171,6 +184,12 @@ def _flag_concern(database: str, candidate_id: str, reason: str) -> dict[str, bo
     if not reason:
         raise ValueError("A short concern reason is required.")
     db.save_candidate_concern(database, candidate_id, reason)
+    db.record_safety_event(
+        database, SAFETY_LOG_PATH,
+        event="screener_concern_flagged", limit_name="coordinator_review",
+        details={"reason": reason[:300], "blocked": "Screening concern routed to coordinator review."},
+        agent=AGENT_NAME, candidate_id=candidate_id,
+    )
     return {"flagged": True}
 
 
@@ -242,6 +261,7 @@ def _view(database: str, candidate_id: str, assistant_text: str = "") -> dict[st
     answered = db.recorded_criterion_ids(database, candidate_id)
     current = next((row for row in criteria if row["id"] not in answered), None)
     progress_number = len(answered) + 1 if current else len(criteria)
+    flagged = db.has_injection_flag(database, candidate_id) or bool(db.get_candidate_concerns(database, candidate_id))
     return {
         "candidate_id": candidate_id,
         "first_name": session["display_name"],
@@ -250,7 +270,17 @@ def _view(database: str, candidate_id: str, assistant_text: str = "") -> dict[st
         "question_number": progress_number,
         "question_total": len(criteria),
         "quick_replies": quick_replies(current, assistant_text),
+        "review_status": "Flagged" if flagged else "In progress",
+        "safety_notice": "This session is flagged for coordinator review." if flagged else "",
     }
+
+
+def prompt_injection_reason(text: str) -> str | None:
+    """Return the first matched injection category before text reaches the model."""
+    for category, pattern in _PROMPT_INJECTION_PATTERNS:
+        if pattern.search(text):
+            return category
+    return None
 
 
 def start_screening(database: str, first_name: str, protocol: dict[str, Any]) -> dict[str, Any]:
@@ -268,8 +298,30 @@ def submit_candidate_message(database: str, candidate_id: str, text: str) -> dic
     if session["status"] != "in_progress":
         return _view(database, candidate_id)
     db.save_candidate_message(database, candidate_id, "user", text)
-    if re.search(r"\b(ignore|disregard|override|forget)\b.{0,60}\b(instruction|rule|prompt|system|tool|policy)s?\b|\b(reveal|show|print)\b.{0,50}\b(other candidate|another candidate|system prompt|api key)\b", text, re.IGNORECASE):
-        db.flag_injection(database, candidate_id, "Instruction-like request detected in candidate text.")
+    injection_reason = prompt_injection_reason(text)
+    if injection_reason:
+        db.flag_injection(database, candidate_id, injection_reason, SAFETY_LOG_PATH, text)
+        neutral = "I can only ask the screening questions, so let's continue."
+        db.save_candidate_message(database, candidate_id, "assistant", neutral)
+        state = _view(database, candidate_id, neutral)
+        state["safety_notice"] = "Safety check: instruction-like content was blocked before reaching the screener. This session is flagged for coordinator review."
+        return state
+    if _ADVICE_REQUEST.search(text):
+        protocol = session["protocol"]
+        current = _get_next(database, candidate_id, protocol)["criterion"]
+        redirect = "I can't give medical advice. Please ask your doctor or the study team."
+        if current:
+            redirect += " " + current["screening_question"]
+        db.record_safety_event(
+            database, SAFETY_LOG_PATH,
+            event="medical_advice_redirect", limit_name="medical_advice",
+            details={"blocked": "Medical guidance was declined and redirected to a doctor or the study team.", "offending_text": text[:180]},
+            agent=AGENT_NAME, candidate_id=candidate_id,
+        )
+        db.save_candidate_message(database, candidate_id, "assistant", redirect)
+        state = _view(database, candidate_id, redirect)
+        state["safety_notice"] = "Safety check: medical advice was declined; please speak with your doctor or the study team."
+        return state
     return _run_agent_turn(database, candidate_id, start=False, latest_text=text)
 
 
@@ -299,7 +351,7 @@ def _run_agent_turn(
         if exc.limit_name not in {"max_screening_turns_per_candidate", "max_tokens_per_candidate"}:
             raise
         db.set_screening_status(database, candidate_id, "turn_limit")
-        completion = _completion_text(session["display_name"])
+        completion = "This screening has paused after reaching a safety limit. Your saved answers are available for coordinator review."
         db.save_candidate_message(database, candidate_id, "assistant", completion)
         return _view(database, candidate_id, completion)
 

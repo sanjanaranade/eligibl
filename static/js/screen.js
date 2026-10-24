@@ -23,7 +23,11 @@
       body: JSON.stringify(data),
     });
     const payload = await response.json();
-    if (!response.ok) throw new Error(payload.error || "Something went wrong. Please try again.");
+    if (!response.ok) {
+      const error = new Error(payload.error || "Something went wrong. Please try again.");
+      error.safetyPause = payload.safety_pause === true;
+      throw error;
+    }
     return payload;
   }
 
@@ -57,6 +61,18 @@
       button.addEventListener("click", () => sendMessage(reply));
       return button;
     }));
+    const safetyNotice = document.getElementById("safety-notice");
+    const noticeText = state.budget_paused
+      ? "Screening is paused for today. Please try again tomorrow."
+      : state.safety_notice || "";
+    safetyNotice.textContent = noticeText;
+    safetyNotice.hidden = !noticeText;
+    if (state.budget_paused) {
+      textArea.disabled = true;
+      sendButton.disabled = true;
+    }
+    const reviewStatus = document.getElementById("screening-status");
+    reviewStatus.hidden = state.review_status !== "Flagged";
     if (state.status !== "in_progress") {
       chat.hidden = true;
       intro.hidden = true;
@@ -80,7 +96,7 @@
 
   function setBusy(value) {
     typing.hidden = !value;
-    sendButton.disabled = value;
+    sendButton.disabled = value || textArea.disabled;
   }
 
   async function sendMessage(message) {
@@ -93,6 +109,13 @@
       render(await post(`/api/screen/${encodeURIComponent(candidateId)}/message`, { message }));
     } catch (error) {
       showError("chat-error", error);
+      if (error.safetyPause) {
+        const notice = document.getElementById("safety-notice");
+        notice.textContent = "Screening is paused for today. Please try again tomorrow.";
+        notice.hidden = false;
+        textArea.disabled = true;
+        sendButton.disabled = true;
+      }
       textArea.value = message;
       count.textContent = `${message.length} / 800`;
     } finally {

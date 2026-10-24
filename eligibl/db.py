@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import sqlite3
 import json
+import re
 from contextlib import contextmanager
 from datetime import UTC, datetime, time as datetime_time, timedelta
 from pathlib import Path
@@ -125,6 +126,15 @@ CREATE TABLE IF NOT EXISTS safety_events (
     limit_name TEXT NOT NULL,
     details_json TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS screening_rate_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    candidate_id TEXT,
+    ip_hash TEXT,
+    kind TEXT NOT NULL CHECK (kind IN ('start', 'message')),
+    created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_screening_rate_kind_time ON screening_rate_events(kind, created_at);
+CREATE INDEX IF NOT EXISTS idx_screening_rate_candidate ON screening_rate_events(candidate_id, kind, created_at);
 """
 
 
@@ -479,14 +489,20 @@ def get_candidate_concerns(database: str | Path, candidate_id: str) -> list[dict
 
 
 def flag_injection(
-    database: str | Path, candidate_id: str, reason: str, log_path: str | Path | None = None
+    database: str | Path, candidate_id: str, reason: str, log_path: str | Path | None = None,
+    offending_text: str = "",
 ) -> None:
     """Record a detected candidate prompt-injection attempt for coordinator review."""
     save_candidate_concern(database, candidate_id, "Possible prompt injection: " + reason[:400])
     record_safety_event(
         database, log_path or Path(__file__).resolve().parents[1] / "logs" / "safety.jsonl",
         event="candidate_injection_flag", limit_name="prompt_injection",
-        details={"reason": reason[:400]}, agent="candidate_screener", candidate_id=candidate_id,
+        details={
+            "reason": reason[:400],
+            "blocked": "Candidate instructions were not sent to the AI screener.",
+            "offending_text": offending_text[:180],
+        },
+        agent="candidate_screener", candidate_id=candidate_id,
     )
 
 
@@ -560,14 +576,74 @@ def get_safety_events(database: str | Path) -> list[dict[str, Any]]:
     """Return safety events with decoded, secret-free details for the coordinator."""
     with session(database) as connection:
         rows = connection.execute(
-            "SELECT timestamp,event,agent,candidate_id,limit_name,details_json FROM safety_events ORDER BY id DESC LIMIT 200"
+            """SELECT e.timestamp,e.event,e.agent,e.candidate_id,e.limit_name,e.details_json,
+                      c.display_name AS candidate_name
+               FROM safety_events e LEFT JOIN candidates c ON c.id=e.candidate_id
+               ORDER BY e.id DESC LIMIT 300"""
         ).fetchall()
     result = []
     for row in rows:
         item = dict(row)
         item["details"] = json.loads(item.pop("details_json"))
+        item["offending_text"] = str(item["details"].get("offending_text", ""))[:180]
+        item["what_was_blocked"] = str(item["details"].get("blocked") or item["details"].get("reason") or item["details"].get("detail") or item["limit_name"])[:240]
         result.append(item)
     return result
+
+
+def safety_event_counts(database: str | Path) -> list[dict[str, Any]]:
+    """Return all-time event counters grouped by type for the Safety dashboard."""
+    with session(database) as connection:
+        rows = connection.execute(
+            "SELECT event, COUNT(*) AS count FROM safety_events GROUP BY event ORDER BY count DESC, event"
+        ).fetchall()
+    return [dict(row) for row in rows]
+
+
+def daily_budget_blocked_today(database: str | Path, timezone_name: str) -> bool:
+    """Check whether the daily budget stopped a call during the configured local day."""
+    zone = ZoneInfo(timezone_name)
+    local_now = datetime.now(zone)
+    midnight = datetime.combine(local_now.date(), datetime_time.min, tzinfo=zone)
+    start = midnight.astimezone(UTC).isoformat()
+    end = (midnight + timedelta(days=1)).astimezone(UTC).isoformat()
+    with session(database) as connection:
+        return connection.execute(
+            "SELECT 1 FROM safety_events WHERE event='budget_limit_blocked' AND limit_name='daily_budget_usd' AND timestamp>=? AND timestamp<? LIMIT 1",
+            (start, end),
+        ).fetchone() is not None
+
+
+def consume_screening_rate_limit(
+    database: str | Path, *, kind: str, candidate_id: str | None, ip_hash: str,
+    interval_seconds: int, hourly_max: int,
+) -> bool:
+    """Atomically consume an allowed start/message slot; return false when limited."""
+    now = datetime.now(UTC)
+    with session(database) as connection:
+        connection.execute("BEGIN IMMEDIATE")
+        if kind == "message":
+            row = connection.execute(
+                "SELECT created_at FROM screening_rate_events WHERE kind='message' AND candidate_id=? ORDER BY id DESC LIMIT 1",
+                (candidate_id,),
+            ).fetchone()
+            if row and (now - datetime.fromisoformat(row["created_at"])).total_seconds() < interval_seconds:
+                return False
+        elif kind == "start":
+            since = (now - timedelta(hours=1)).isoformat()
+            count = connection.execute(
+                "SELECT COUNT(*) AS count FROM screening_rate_events WHERE kind='start' AND ip_hash=? AND created_at>=?",
+                (ip_hash, since),
+            ).fetchone()["count"]
+            if int(count) >= hourly_max:
+                return False
+        else:
+            raise ValueError("Unsupported screening rate-limit kind.")
+        connection.execute(
+            "INSERT INTO screening_rate_events(candidate_id,ip_hash,kind,created_at) VALUES(?,?,?,?)",
+            (candidate_id, ip_hash, kind, now.isoformat()),
+        )
+    return True
 
 
 def coordinator_detail(database: str | Path, candidate_id: str) -> dict[str, Any] | None:
@@ -730,6 +806,12 @@ def record_safety_event(
     """Write a safety event to SQLite and a secret-free JSONL audit file."""
     timestamp = datetime.now(UTC).isoformat()
     safe_details = {key: value for key, value in details.items() if key != "message_text"}
+    if "offending_text" in safe_details:
+        excerpt = str(safe_details["offending_text"])
+        excerpt = re.sub(r"(?i)(PORTKEY_API_KEY\s*[=:]\s*)[^\s,;]+", r"\1[redacted]", excerpt)
+        excerpt = re.sub(r"(?i)(api[_ -]?key\s*[=:]\s*)[^\s,;]+", r"\1[redacted]", excerpt)
+        excerpt = re.sub(r"\b(?:sk|pk)-[A-Za-z0-9_-]{8,}\b", "[redacted credential]", excerpt)
+        safe_details["offending_text"] = excerpt[:180]
     with session(database) as connection:
         connection.execute(
             """INSERT INTO safety_events(timestamp, event, agent, candidate_id, run_id, limit_name, details_json)
