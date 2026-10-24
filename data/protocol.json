@@ -28,10 +28,10 @@
       "type": "inclusion",
       "original_text": "BMI between 18 and 35 kg/m²",
       "requirement": "Your BMI must be between 18 and 35 kg/m².",
-      "screening_question": "Is your BMI between 18 and 35 kg/m²?",
-      "satisfied_when": "A BMI measurement confirms that it is within the stated range.",
-      "unclear_when": "A BMI measurement is unavailable, or it is unclear whether a value at a range boundary qualifies.",
-      "requires_clinic_check": true
+      "screening_question": "What is your current height and weight? Please include units—for example, 170 cm and 68 kg, or 5 ft 7 in and 150 lb. If you do not know, say so.",
+      "satisfied_when": "Calculate BMI from the reported height and weight (kg/m²; for pounds and inches, BMI = 703 × pounds ÷ inches²). The value must be within 18–35 kg/m². If it is exactly 18 or 35, mark unclear because the source does not say whether the endpoints are included.",
+      "unclear_when": "Height, weight, or units are missing or uncertain, or the calculated BMI is exactly 18 or 35 and the coordinator has not confirmed how the protocol treats endpoints.",
+      "requires_clinic_check": false
     },
     {
       "id": "C4",

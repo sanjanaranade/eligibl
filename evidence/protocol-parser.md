@@ -13,3 +13,7 @@ The usage log records the actual attempts, including responses rejected by local
 ## Offline verification
 
 The test suite covers required-field/source correspondence, exclusion negation, missing criteria rejection, and source-hash caching. The cache is valid only while `data/protocol.sha256` matches the source file's SHA-256 digest.
+
+## BMI follow-up
+
+The BMI checklist asks for height and weight with units instead of assuming the candidate knows their BMI. `eligibl/agents/screening_tools.py` exposes a trusted `BMI_TOOL` registration for `call_agent`, backed by deterministic metric/imperial conversion and calculation. Missing units or endpoint cases remain unclear; the helper does not decide eligibility. These BMI edits are local, deterministic changes and did not require another model call.

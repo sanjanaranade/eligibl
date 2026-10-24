@@ -5,6 +5,7 @@ import json
 import pytest
 
 from eligibl.agents import protocol_parser as parser
+from eligibl.agents.screening_tools import BMI_TOOL, calculate_bmi
 
 
 SOURCE = """Study title: Sample Sleep Study
@@ -66,6 +67,42 @@ def test_validator_rejects_missing_source_criteria():
 
     with pytest.raises(parser.ProtocolValidationError, match="count does not match"):
         parser.validate_protocol(result, SOURCE)
+
+
+def test_bmi_criterion_asks_for_height_and_weight_and_can_be_chat_screened():
+    bmi_source = SOURCE.replace("* Lab value within range", "* BMI between 18 and 35 kg/m²")
+    result = parsed_result(bmi_source)
+
+    protocol = parser.validate_protocol(result, bmi_source)
+    bmi = protocol["criteria"][1]
+
+    assert "height and weight" in bmi["screening_question"]
+    assert "Calculate BMI" in bmi["satisfied_when"]
+    assert bmi["requires_clinic_check"] is False
+
+
+@pytest.mark.parametrize(
+    ("weight", "height", "weight_unit", "height_unit", "expected"),
+    [
+        (68, 170, "kg", "cm", 23.5),
+        (150, 67, "lb", "in", 23.5),
+        (68, 1.7, "kg", "m", 23.5),
+    ],
+)
+def test_calculate_bmi_supports_metric_and_imperial(weight, height, weight_unit, height_unit, expected):
+    assert calculate_bmi(weight, height, weight_unit=weight_unit, height_unit=height_unit) == expected
+
+
+def test_calculate_bmi_rejects_unknown_units_and_nonpositive_values():
+    with pytest.raises(ValueError, match="weight_unit"):
+        calculate_bmi(68, 170, weight_unit="stone")
+    with pytest.raises(ValueError, match="greater than zero"):
+        calculate_bmi(0, 170)
+
+
+def test_bmi_tool_is_registered_with_call_agent_compatible_schema():
+    assert BMI_TOOL["schema"]["name"] == "calculate_bmi"
+    assert BMI_TOOL["handler"](weight=68, weight_unit="kg", height=170, height_unit="cm") == 23.5
 
 
 def test_parser_cache_skips_model_until_source_changes(tmp_path, monkeypatch):
