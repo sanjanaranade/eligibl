@@ -92,6 +92,101 @@ def test_coordinator_detail_and_reason_required_override(tmp_path):
     assert saved.json["candidate"]["actions"][0]["created_at"]
 
 
+def test_approval_creates_outreach_and_requires_a_reminder_slot(tmp_path, monkeypatch):
+    import json
+
+    from eligibl.agents import outreach
+    from eligibl.config import REPO_ROOT
+    from eligibl.db import create_candidate_screening, get_screening_session
+
+    database = str(tmp_path / "outreach-approval.db")
+    app = create_app({"TESTING": True, "DATABASE": database})
+    monkeypatch.setattr("eligibl.routes.main.api_key_found", lambda: True)
+    protocol = json.loads((REPO_ROOT / "data" / "protocol.json").read_text(encoding="utf-8"))
+    create_candidate_screening(database, "approved-candidate", "Maya", protocol)
+    captured = []
+    monkeypatch.setattr(outreach, "create_candidate_drafts", lambda db_path, candidate_id, scenario: captured.append((candidate_id, scenario)) or [1, 2, 3])
+    client = app.test_client()
+    invalid = client.post("/api/coordinator/candidates/approved-candidate/actions", json={"action": "approve"})
+    assert invalid.status_code == 400
+    slot = outreach.get_available_slots()[1]["label"]
+    response = client.post(
+        "/api/coordinator/candidates/approved-candidate/actions",
+        json={"action": "approve", "chosen_slot": slot},
+    )
+    assert response.status_code == 200
+    assert captured == [("approved-candidate", "approved")]
+    assert response.json["candidate"]["coordinator_status"] == "approved"
+    assert get_screening_session(database, "approved-candidate")["status"] == "in_progress"
+
+
+def test_mark_not_match_generates_only_the_rejection_draft(tmp_path, monkeypatch):
+    import json
+
+    from eligibl.agents import outreach
+    from eligibl.config import REPO_ROOT
+    from eligibl.db import create_candidate_screening
+
+    database = str(tmp_path / "not-match-outreach.db")
+    app = create_app({"TESTING": True, "DATABASE": database})
+    monkeypatch.setattr("eligibl.routes.main.api_key_found", lambda: True)
+    protocol = json.loads((REPO_ROOT / "data" / "protocol.json").read_text(encoding="utf-8"))
+    create_candidate_screening(database, "not-match-candidate", "Maya", protocol)
+    captured = []
+    monkeypatch.setattr(outreach, "create_candidate_drafts", lambda db_path, candidate_id, scenario: captured.append((candidate_id, scenario)) or [1])
+
+    response = app.test_client().post(
+        "/api/coordinator/candidates/not-match-candidate/actions",
+        json={"action": "mark_not_match"},
+    )
+
+    assert response.status_code == 200
+    assert captured == [("not-match-candidate", "not_a_match")]
+    assert response.json["candidate"]["decision_label"] == "Not a match"
+    assert response.json["candidate"]["coordinator_status"] == "rejected"
+
+
+def test_email_draft_page_and_validation_block_before_demo_queue(tmp_path):
+    import json
+
+    from eligibl.config import REPO_ROOT
+    from eligibl.db import coordinator_candidates, create_candidate_screening, get_email_drafts, insert_email_drafts
+
+    database = str(tmp_path / "email-page.db")
+    app = create_app({"TESTING": True, "DATABASE": database})
+    protocol = json.loads((REPO_ROOT / "data" / "protocol.json").read_text(encoding="utf-8"))
+    create_candidate_screening(database, "email-page-candidate", "Maya", protocol)
+    draft_id = insert_email_drafts(database, "email-page-candidate", [{
+        "type": "invitation", "subject": "Study invitation", "body": "Participation is voluntary.", "send_at": "2026-11-01T10:00:00-04:00",
+    }])[0]
+    client = app.test_client()
+
+    page = client.get("/coordinator/email-drafts")
+    assert page.status_code == 200
+    assert b"Approve to send" in page.data
+    assert b"Maya" in page.data
+    assert b"Demo \xc2\xb7 synthetic data only" in page.data
+
+    blocked = client.post(f"/api/coordinator/email-drafts/{draft_id}/queue")
+    assert blocked.status_code == 400
+    assert b"study team contact line" in blocked.data
+    assert get_email_drafts(database)[0]["status"] == "draft"
+    from eligibl.agents.outreach import _availability_config
+    contact = _availability_config()["study_team_contact_line"]
+    from eligibl.agents.outreach import get_available_slots
+    options = " ".join(slot["label"] for slot in get_available_slots())
+    edited_body = f"Hello Maya, your study visit invitation is ready. These are the proposed times: {options}. Participation is voluntary. {contact}"
+    edit = client.put(f"/api/coordinator/email-drafts/{draft_id}", json={"subject": "Invitation to talk", "body": edited_body})
+    assert edit.status_code == 200
+    queued = client.post(f"/api/coordinator/email-drafts/{draft_id}/queue")
+    assert queued.status_code == 200
+    assert queued.json["queued"] is True
+    assert queued.json["actually_sent"] is False
+    assert get_email_drafts(database)[0]["status"] == "queued"
+    assert get_email_drafts(database)[0]["sent_at"] is None
+    assert coordinator_candidates(database)[0]["contacted_at"]
+
+
 def test_usage_today_endpoint_includes_budget_and_zeroed_usage(tmp_path):
     app = create_app({"TESTING": True, "DATABASE": str(tmp_path / "test.db")})
 

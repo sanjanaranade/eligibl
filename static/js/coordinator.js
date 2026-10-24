@@ -40,6 +40,7 @@
   const renderDetail = (candidate) => {
     const criteria = candidate.criteria || [];
     const initials = candidate.display_name.trim().split(/\s+/).map((part) => part[0]).join("").toUpperCase();
+    const slotOptions = (candidate.available_slots || []).map((slot) => `<option value="${escapeHtml(slot.label)}" ${candidate.chosen_slot === slot.label ? "selected" : ""}>${escapeHtml(slot.label)}</option>`).join("");
     const criterionCards = criteria.map((item) => {
       const answer = item.answer;
       const verdict = answer?.verdict || "unknown";
@@ -59,7 +60,7 @@
       <details class="transcript-details"><summary>Full transcript (${candidate.transcript.length} messages)</summary><div class="transcript-list">${transcript || "No transcript available."}</div></details>
       ${(candidate.concerns || []).length ? `<section class="concern-box"><h3>Coordinator flags</h3>${candidate.concerns.map((item) => `<p>${escapeHtml(item.reason)}</p>`).join("")}</section>` : ""}
       <div class="action-history"><h3>Coordinator actions</h3>${(candidate.actions || []).map((item) => `<p><strong>${escapeHtml(item.action.replaceAll("_", " "))}</strong> · ${escapeHtml(timeAgo(item.created_at))}${item.reason ? ` · ${escapeHtml(item.reason)}` : ""}</p>`).join("") || '<p class="detail-placeholder">No review actions yet.</p>'}</div>
-      <div class="coordinator-actions"><button class="button" data-action="approve">Approve</button><button class="button secondary" data-action="show-override">Override decision</button><button class="button danger" data-action="mark_not_match">Mark not a match</button><button class="button secondary" data-action="contacted">Mark contacted</button>
+      <div class="coordinator-actions"><div class="outreach-slot"><label for="chosen-slot">Reminder schedule visit slot</label><select id="chosen-slot"><option value="">Select a sample visit slot…</option>${slotOptions}</select><small>The invitation includes all three proposed slots. Choose the demo slot that anchors the two reminders.</small></div><button class="button" data-action="approve">Approve</button><button class="button secondary" data-action="show-override">Override decision</button><button class="button danger" data-action="mark_not_match">Mark not a match</button><button class="button secondary" data-action="contacted">Mark contacted</button>
       <div class="override-form" hidden><label>Decision<select id="override-decision"><option>Flagged</option><option>Not a match</option><option>Needs review</option><option>Likely eligible</option></select></label><label>Reason<textarea id="override-reason" rows="2" required></textarea></label><button class="button" data-action="override">Save override</button></div><p class="action-error" role="alert"></p></div></section>
       <section class="detail-tab-content" data-content="trace" hidden>${renderTrace(candidate.trace)}</section>`;
   };
@@ -99,6 +100,10 @@
     const reason = action === "override" ? content.querySelector("#override-reason").value.trim() : "";
     if (action === "override" && !reason) { content.querySelector(".action-error").textContent = "Please enter a reason for this override."; return; }
     const payload = { action, reason };
+    if (action === "approve") {
+      payload.chosen_slot = content.querySelector("#chosen-slot").value;
+      if (!payload.chosen_slot) { content.querySelector(".action-error").textContent = "Choose a proposed visit slot to schedule the reminder drafts."; return; }
+    }
     if (action === "override") payload.decision = content.querySelector("#override-decision").value;
     button.disabled = true;
     try {

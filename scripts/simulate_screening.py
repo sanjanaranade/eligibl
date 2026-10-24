@@ -20,6 +20,10 @@ def run_simulation() -> dict:
     with tempfile.TemporaryDirectory(prefix="eligibl-screen-demo-") as temp_dir:
         app = create_app({"TESTING": True, "DATABASE": str(Path(temp_dir) / "simulation.db")})
         transcript = []
+        original_flag_injection = screener.db.flag_injection
+
+        def flag_in_temporary_log(database, candidate_id, reason):
+            original_flag_injection(database, candidate_id, reason, Path(temp_dir) / "safety.jsonl")
 
         def fake_call_agent(agent_name, messages, *, candidate_id, run_id, tools, max_output_tokens):
             assert agent_name == "candidate_screener"
@@ -59,6 +63,7 @@ def run_simulation() -> dict:
         with patch.object(main_routes, "api_key_found", return_value=True), \
              patch.object(main_routes, "parse_protocol", return_value=protocol), \
              patch.object(screener, "call_agent", side_effect=fake_call_agent), \
+             patch.object(screener.db, "flag_injection", side_effect=flag_in_temporary_log), \
              patch("eligibl.agents.verifier.call_agent", return_value=(json.dumps({"summary": "Synthetic persona answers reviewed.", "downgrades": []}), {})):
             client = app.test_client()
             start = client.post("/api/screen/start", json={"first_name": "Alex", "consent": True})

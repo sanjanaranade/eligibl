@@ -1,0 +1,21 @@
+{
+  "timezone": "America/New_York",
+  "study_team_contact_line": "Questions? Contact the study team at studyteam@example.org.",
+  "slots": [
+    {
+      "id": "slot-1",
+      "label": "Tuesday, November 3, 2026 at 10:00 AM ET",
+      "start_at": "2026-11-03T10:00:00-05:00"
+    },
+    {
+      "id": "slot-2",
+      "label": "Thursday, November 5, 2026 at 2:00 PM ET",
+      "start_at": "2026-11-05T14:00:00-05:00"
+    },
+    {
+      "id": "slot-3",
+      "label": "Monday, November 9, 2026 at 9:30 AM ET",
+      "start_at": "2026-11-09T09:30:00-05:00"
+    }
+  ]
+}

@@ -9,15 +9,21 @@ from ..config import api_key_found
 from ..db import usage_totals_today
 from ..agents.protocol_parser import SOURCE_PATH, parse_protocol
 from ..agents import screener
+from ..agents import outreach
+from ..agents.outreach import DraftValidationError, validate_draft
 from ..budget import BudgetExceeded
 from ..db import (
     coordinator_candidates,
     coordinator_detail,
     get_candidate_messages,
+    get_email_drafts,
     get_safety_events,
     get_screening_session,
     record_coordinator_action,
     recorded_criterion_ids,
+    queue_email_draft,
+    set_candidate_chosen_slot,
+    update_email_draft,
 )
 
 
@@ -49,7 +55,39 @@ def coordinator_email_drafts():
     """Show draft-only outreach status without sending messages."""
     limits = load_limits()
     usage = usage_totals_today(current_app.config["DATABASE"], limits["timezone"])
-    return render_template("coordinator_simple.html", heading="Email drafts", description="Outreach drafts will be available here. Eligibl never sends email.", active="Email drafts", usage=usage, budget=limits["daily_budget_usd"])
+    groups = {}
+    for draft in get_email_drafts(current_app.config["DATABASE"]):
+        group = groups.setdefault(draft["candidate_id"], {"candidate_id": draft["candidate_id"], "display_name": draft["display_name"], "drafts": []})
+        group["drafts"].append(draft)
+    return render_template("email_drafts.html", groups=list(groups.values()), usage=usage, budget=limits["daily_budget_usd"])
+
+
+@main_bp.put("/api/coordinator/email-drafts/<int:draft_id>")
+def edit_email_draft(draft_id: int):
+    """Save subject and body edits to an unqueued email draft."""
+    payload = request.get_json(silent=True) or {}
+    subject, body = str(payload.get("subject", "")), str(payload.get("body", ""))
+    if len(subject) > 300 or len(body) > 5000:
+        return jsonify(error="The subject or message is too long to save."), 413
+    if not update_email_draft(current_app.config["DATABASE"], draft_id, subject, body):
+        return jsonify(error="This draft was not found or has already been queued."), 404
+    return jsonify(saved=True)
+
+
+@main_bp.post("/api/coordinator/email-drafts/<int:draft_id>/queue")
+def approve_email_draft(draft_id: int):
+    """Validate and queue a draft for demo only; never send email."""
+    draft = next((row for row in get_email_drafts(current_app.config["DATABASE"]) if row["id"] == draft_id), None)
+    if draft is None:
+        return jsonify(error="This email draft was not found."), 404
+    try:
+        validate_draft(draft["draft_type"], draft["subject"], draft["body"], draft.get("chosen_slot", ""))
+        result = queue_email_draft(current_app.config["DATABASE"], draft_id)
+    except DraftValidationError as exc:
+        return jsonify(error=str(exc)), 400
+    except ValueError as exc:
+        return jsonify(error=str(exc)), 400
+    return jsonify(queued=True, actually_sent=False, result=result)
 
 
 @main_bp.get("/coordinator/safety")
@@ -72,6 +110,7 @@ def coordinator_candidate_api(candidate_id: str):
     detail = coordinator_detail(current_app.config["DATABASE"], candidate_id)
     if detail is None:
         return jsonify(error="Candidate not found."), 404
+    detail["available_slots"] = outreach.get_available_slots()
     return jsonify(detail)
 
 
@@ -86,12 +125,31 @@ def coordinator_candidate_action(candidate_id: str):
     try:
         if action == "override" and not reason:
             return jsonify(error="An override reason is required."), 400
+        scenario = "approved" if action == "approve" else (
+            "not_a_match" if action == "mark_not_match" or (action == "override" and payload.get("decision") == "Not a match") else None
+        )
+        if action == "approve":
+            selected_slot = str(payload.get("chosen_slot", ""))
+            if selected_slot not in {slot["label"] for slot in outreach.get_available_slots()}:
+                return jsonify(error="Choose a proposed visit slot so reminder drafts can be scheduled."), 400
+            set_candidate_chosen_slot(current_app.config["DATABASE"], candidate_id, selected_slot)
+        if scenario:
+            if not api_key_found():
+                return jsonify(error="Outreach needs PORTKEY_API_KEY in this project folder's .env or its parent folder."), 503
+            outreach.create_candidate_drafts(current_app.config["DATABASE"], candidate_id, scenario)
         record_coordinator_action(
             current_app.config["DATABASE"], candidate_id, action,
             reason, str(payload.get("decision", "")),
         )
+    except DraftValidationError as exc:
+        return jsonify(error=f"The coordinator action was not saved because the email draft did not pass its safety checks: {exc}"), 422
     except ValueError as exc:
         return jsonify(error=str(exc)), 400
+    except BudgetExceeded as exc:
+        return jsonify(error=f"Outreach is paused because the {exc.limit_name} budget limit was reached. The coordinator action was not saved."), 429
+    except Exception:
+        current_app.logger.exception("Unable to draft coordinator outreach")
+        return jsonify(error="We could not prepare the draft emails, so the coordinator action was not saved. Please try again."), 503
     return jsonify(candidate=coordinator_detail(current_app.config["DATABASE"], candidate_id))
 
 

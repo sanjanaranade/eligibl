@@ -24,7 +24,8 @@ CREATE TABLE IF NOT EXISTS candidates (
     verifier_summary TEXT NOT NULL DEFAULT '',
     verifier_status TEXT NOT NULL DEFAULT 'pending',
     override_reason TEXT NOT NULL DEFAULT '',
-    contacted_at TEXT
+    contacted_at TEXT,
+    chosen_slot TEXT
 );
 CREATE TABLE IF NOT EXISTS screening_sessions (
     candidate_id TEXT PRIMARY KEY REFERENCES candidates(id),
@@ -69,6 +70,10 @@ CREATE TABLE IF NOT EXISTS email_drafts (
     candidate_id TEXT NOT NULL REFERENCES candidates(id),
     subject TEXT NOT NULL,
     body TEXT NOT NULL,
+    draft_type TEXT NOT NULL DEFAULT 'custom',
+    send_at TEXT,
+    queued_at TEXT,
+    status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'queued', 'rejected')),
     approval_status TEXT NOT NULL DEFAULT 'draft'
         CHECK (approval_status IN ('draft', 'approved', 'rejected')),
     sent_at TEXT,
@@ -165,10 +170,21 @@ def init_db(database: str | Path) -> None:
             "verifier_status": "TEXT NOT NULL DEFAULT 'pending'",
             "override_reason": "TEXT NOT NULL DEFAULT ''",
             "contacted_at": "TEXT",
+            "chosen_slot": "TEXT",
         }
         for name, declaration in migrations.items():
             if name not in candidate_columns:
                 connection.execute(f"ALTER TABLE candidates ADD COLUMN {name} {declaration}")
+        draft_columns = {row["name"] for row in connection.execute("PRAGMA table_info(email_drafts)")}
+        draft_migrations = {
+            "draft_type": "TEXT NOT NULL DEFAULT 'custom'",
+            "send_at": "TEXT",
+            "queued_at": "TEXT",
+            "status": "TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'queued', 'rejected'))",
+        }
+        for name, declaration in draft_migrations.items():
+            if name not in draft_columns:
+                connection.execute(f"ALTER TABLE email_drafts ADD COLUMN {name} {declaration}")
         connection.execute(
             "CREATE INDEX IF NOT EXISTS idx_model_calls_timestamp ON model_call_logs(timestamp)"
         )
@@ -584,6 +600,94 @@ def coordinator_detail(database: str | Path, candidate_id: str) -> dict[str, Any
         usages=usages,
     )
     return candidate
+
+
+def set_candidate_chosen_slot(database: str | Path, candidate_id: str, slot: str) -> None:
+    """Persist the coordinator-selected slot used to schedule demo reminders."""
+    with session(database) as connection:
+        cursor = connection.execute("UPDATE candidates SET chosen_slot=? WHERE id=?", (slot[:200], candidate_id))
+        if not cursor.rowcount:
+            raise LookupError("Candidate not found.")
+
+
+def candidate_outreach_summary(database: str | Path, candidate_id: str, status_override: str | None = None) -> dict[str, str]:
+    """Return only first name, study title, status, and selected slot to Outreach."""
+    with session(database) as connection:
+        row = connection.execute(
+            """SELECT c.display_name,c.decision_label,c.coordinator_status,c.chosen_slot,s.protocol_json
+               FROM candidates c LEFT JOIN screening_sessions s ON s.candidate_id=c.id WHERE c.id=?""",
+            (candidate_id,),
+        ).fetchone()
+    if row is None:
+        raise LookupError("Candidate not found.")
+    protocol = json.loads(row["protocol_json"] or "{}")
+    return {
+        "first_name": row["display_name"].split()[0],
+        "study_title": str(protocol.get("study_title", "the study")),
+        "status": status_override or ("Approved" if row["coordinator_status"] == "approved" else row["decision_label"]),
+        "chosen_slot": row["chosen_slot"] or "",
+    }
+
+
+def insert_email_drafts(database: str | Path, candidate_id: str, drafts: list[dict[str, Any]]) -> list[int]:
+    """Insert a generated set of validated drafts atomically and return their IDs."""
+    now = datetime.now(UTC).isoformat()
+    ids = []
+    with session(database) as connection:
+        for draft in drafts:
+            cursor = connection.execute(
+                """INSERT INTO email_drafts(candidate_id,subject,body,draft_type,send_at,created_at)
+                   VALUES(?,?,?,?,?,?)""",
+                (candidate_id, draft["subject"], draft["body"], draft["type"], draft.get("send_at"), now),
+            )
+            ids.append(int(cursor.lastrowid))
+    return ids
+
+
+def get_email_drafts(database: str | Path) -> list[dict[str, Any]]:
+    """Return drafts grouped later in the view, without any transcript data."""
+    with session(database) as connection:
+        rows = connection.execute(
+            """SELECT d.id,d.candidate_id,d.subject,d.body,d.draft_type,d.send_at,d.status,
+                      d.approval_status,d.queued_at,d.sent_at,d.created_at,c.display_name,c.decision_label,c.chosen_slot
+               FROM email_drafts d JOIN candidates c ON c.id=d.candidate_id ORDER BY c.created_at DESC,d.id"""
+        ).fetchall()
+    return [dict(row) for row in rows]
+
+
+def update_email_draft(database: str | Path, draft_id: int, subject: str, body: str) -> bool:
+    """Save coordinator edits to a draft that has not yet been queued."""
+    with session(database) as connection:
+        cursor = connection.execute(
+            "UPDATE email_drafts SET subject=?,body=? WHERE id=? AND status='draft'",
+            (subject[:300], body[:5000], draft_id),
+        )
+    return bool(cursor.rowcount)
+
+
+def queue_email_draft(database: str | Path, draft_id: int) -> dict[str, Any] | None:
+    """Mark a reviewed draft queued for demo only; this function never sends email."""
+    now = datetime.now(UTC).isoformat()
+    with session(database) as connection:
+        row = connection.execute("SELECT candidate_id,status FROM email_drafts WHERE id=?", (draft_id,)).fetchone()
+        if row is None:
+            return None
+        if row["status"] == "queued":
+            return {"candidate_id": row["candidate_id"], "queued_at": now, "already_queued": True}
+        if row["status"] != "draft":
+            raise ValueError("Only a draft can be queued.")
+        connection.execute(
+            """UPDATE email_drafts SET status='queued',approval_status='approved',queued_at=?,
+                      send_at=CASE WHEN draft_type IN ('invitation','not_a_match') THEN ? ELSE send_at END
+               WHERE id=?""",
+            (now, now, draft_id),
+        )
+        connection.execute("UPDATE candidates SET contacted_at=COALESCE(contacted_at,?) WHERE id=?", (now, row["candidate_id"]))
+        connection.execute(
+            "INSERT INTO coordinator_actions(candidate_id,action,reason,created_at) VALUES(?,?,?,?)",
+            (row["candidate_id"], "email_queued_demo", f"Draft {draft_id}; not sent", now),
+        )
+    return {"candidate_id": row["candidate_id"], "queued_at": now, "already_queued": False}
 
 
 def record_trace_step(database: str | Path, record: dict[str, Any]) -> int:
