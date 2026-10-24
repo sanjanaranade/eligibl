@@ -178,6 +178,18 @@ def _latest_user_text(messages: list[dict[str, Any]]) -> str:
     return ""
 
 
+def _candidate_text_for_limit(user_text: str) -> str:
+    """Unwrap JSON-delimited candidate data so only their text counts toward 800 chars."""
+    prefix = "CANDIDATE_MESSAGE_JSON:"
+    if user_text.startswith(prefix):
+        try:
+            value = json.loads(user_text[len(prefix):])
+            return value if isinstance(value, str) else user_text
+        except json.JSONDecodeError:
+            return user_text
+    return user_text
+
+
 def _screening_agent(agent_name: str) -> bool:
     """Identify candidate-facing screener agents whose turns are capped."""
     return "screen" in agent_name.casefold()
@@ -254,10 +266,12 @@ def _preflight(
     safety_log: Path,
     limits: dict[str, Any],
     pricing: dict[str, Any],
+    output_limit: int | None = None,
 ) -> int:
     """Check dollar and cumulative candidate-token budgets before every API call."""
     estimated_input = estimate_input_tokens(messages)
-    max_output = int(limits["max_output_tokens_per_call"])
+    configured_output = int(limits["max_output_tokens_per_call"])
+    max_output = min(configured_output, int(output_limit)) if output_limit is not None else configured_output
 
     def reject(name: str, detail: str, observed: Any = None, maximum: Any = None) -> None:
         record_safety_event(
@@ -300,6 +314,7 @@ def _api_call_with_retries(
     safety_log: Path,
     limits: dict[str, Any],
     pricing: dict[str, Any],
+    output_limit: int | None = None,
 ) -> tuple[Any, dict[str, int], float]:
     """Make one model turn with at most two retries; log each attempt."""
     retry_count = min(2, max(0, int(limits.get("max_api_retries", 2))))
@@ -315,6 +330,7 @@ def _api_call_with_retries(
             safety_log=safety_log,
             limits=limits,
             pricing=pricing,
+            output_limit=output_limit,
         )
         call_args = dict(request)
         call_args["max_output_tokens"] = max_output
@@ -355,10 +371,12 @@ def call_agent(
     run_id: str | None = None,
     tools: Any = None,
     response_schema: Any = None,
+    max_output_tokens: int | None = None,
 ) -> tuple[Any, dict[str, Any]]:
     """Call gpt-6-luna with optional trusted tools/schema and enforce budgets.
 
     `tools` maps server-owned names to `{"schema": ..., "handler": callable}`.
+    `max_output_tokens` may lower (never raise) the configured per-call output cap.
     The model may select only these registered handlers; candidate text cannot add tools.
     Returns `(text_or_structured_result, aggregate_usage)`.
     """
@@ -388,13 +406,14 @@ def call_agent(
     try:
         if candidate_id and _screening_agent(agent_name):
             max_chars = int(limits["max_candidate_message_characters"])
-            if len(user_text) > max_chars:
-                budget_reject("max_candidate_message_characters", "Candidate message exceeds the configured character cap.", len(user_text), max_chars)
+            candidate_text = _candidate_text_for_limit(user_text)
+            if len(candidate_text) > max_chars:
+                budget_reject("max_candidate_message_characters", "Candidate message exceeds the configured character cap.", len(candidate_text), max_chars)
             try:
                 _preflight(
                     messages=payload, agent_name=agent_name, candidate_id=candidate_id,
                     run_id=active_run_id, database=database, safety_log=safety_log,
-                    limits=limits, pricing=pricing,
+                    limits=limits, pricing=pricing, output_limit=max_output_tokens,
                 )
             except BudgetExceeded:
                 raise
@@ -425,6 +444,7 @@ def call_agent(
                 safety_log=safety_log,
                 limits=limits,
                 pricing=pricing,
+                output_limit=max_output_tokens,
             )
             for key, token_key in (("input", "input"), ("cached_input", "cached_input"), ("output", "output")):
                 aggregate[key] += current_usage[token_key]
@@ -448,9 +468,16 @@ def call_agent(
                 )
             tool_loops += 1
             if isinstance(payload, list):
+                # Responses carry output-only metadata (for example `status`)
+                # that Azure-backed Portkey rejects if echoed as input items.
                 payload.extend(
-                    item.model_dump() if hasattr(item, "model_dump") else item
-                    for item in (_value(response, "output", []) or [])
+                    {
+                        "type": "function_call",
+                        "call_id": str(_value(tool_call, "call_id", "")),
+                        "name": str(_value(tool_call, "name", "")),
+                        "arguments": str(_value(tool_call, "arguments", "{}")),
+                    }
+                    for tool_call in calls
                 )
             for tool_call in calls:
                 tool_name = str(_value(tool_call, "name", ""))

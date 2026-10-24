@@ -36,6 +36,9 @@ def test_all_initial_pages_include_synthetic_footer(tmp_path):
         response = client.get(path)
         assert response.status_code == 200
         assert b"Demo \xc2\xb7 synthetic data only" in response.data
+    screen_page = client.get("/screen")
+    assert b"I'm using a made-up persona for this demo" in screen_page.data
+    assert b"maxlength=\"800\"" in screen_page.data
 
 
 def test_usage_today_endpoint_includes_budget_and_zeroed_usage(tmp_path):

@@ -1,8 +1,62 @@
 {% extends "base.html" %}
-{% block title %}Study screening — Eligibl{% endblock %}
+{% block title %}Candidate screening — Eligibl{% endblock %}
 {% block content %}
-  <p class="eyebrow">Candidate screening</p>
-  <h1>Study criteria check-in</h1>
-  <p class="lede">The conversational screener is being built. This demo uses synthetic data and does not make final eligibility decisions.</p>
-  <a class="text-link" href="{{ url_for('main.index') }}">← Back to welcome</a>
+  <section class="screening-shell" data-screening-app>
+    <p class="eyebrow">Candidate screening · Demo</p>
+    <h1>A calm first step</h1>
+    {% if protocol_error %}<p class="notice" role="alert">{{ protocol_error }}</p>{% endif %}
+    <section class="study-intro" id="screening-intro">
+      {% if protocol %}
+        <p class="study-id">{{ protocol.nct_id }} · {{ protocol.study_title }}</p>
+        <h2>About this study</h2>
+        <p>{{ protocol.candidate_summary }}</p>
+      {% else %}
+        <h2>Study information unavailable</h2>
+        <p>Please contact the study team before continuing.</p>
+      {% endif %}
+      <p class="synthetic-reminder">This is a demo using made-up personas only. It is not medical advice and does not determine eligibility.</p>
+      <form id="screening-start-form" class="screening-form">
+        <label for="first-name">What first name should we use?</label>
+        <input id="first-name" name="first_name" type="text" maxlength="40" autocomplete="given-name" required {% if not protocol %}disabled{% endif %}>
+        <label class="consent-label">
+          <input id="consent" name="consent" type="checkbox" required {% if not protocol %}disabled{% endif %}>
+          <span>I understand this is a screening chat, not medical advice, and I'm using a made-up persona for this demo.</span>
+        </label>
+        <button class="screen-button" type="submit" {% if not protocol %}disabled{% endif %}>Start screening</button>
+        <p class="screen-error" id="start-error" role="alert" hidden></p>
+      </form>
+    </section>
+
+    <section id="screening-chat" class="chat-panel" hidden aria-label="Screening chat">
+      <div class="chat-topline">
+        <div><p class="chat-kicker">Your screening chat</p><p id="progress-label" class="progress-label">Question 1 of 1</p></div>
+        <a href="{{ url_for('main.index') }}" class="chat-exit">Exit</a>
+      </div>
+      <div class="progress-track" role="progressbar" aria-label="Screening progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="progress-fill"></span></div>
+      <div id="message-list" class="message-list" aria-live="polite" aria-relevant="additions"></div>
+      <div id="typing-indicator" class="typing-indicator" hidden><span></span><span></span><span></span><em>Eligibl is thinking…</em></div>
+      <div id="quick-replies" class="quick-replies" aria-label="Quick replies"></div>
+      <form id="message-form" class="message-form">
+        <label class="sr-only" for="candidate-message">Your response</label>
+        <textarea id="candidate-message" name="message" rows="2" maxlength="800" placeholder="Type your response…" required></textarea>
+        <div class="composer-meta"><span id="character-count">0 / 800</span><button class="screen-button" id="send-button" type="submit">Send</button></div>
+      </form>
+      <p id="chat-error" class="screen-error" role="alert" hidden></p>
+    </section>
+
+    <section id="screening-complete" class="completion-card" hidden>
+      <p class="eyebrow">Screening chat complete</p>
+      <h2>Thank you, <span id="completion-name"></span>.</h2>
+      <p id="completion-message" class="completion-message"></p>
+      <h3>What happens next</h3>
+      <ol>
+        <li>A coordinator reviews your answers.</li>
+        <li>You'll get an email either way.</li>
+        <li>Taking part is always your choice.</li>
+      </ol>
+      <p class="synthetic-reminder">This is a synthetic demo. It does not send email or contact anyone.</p>
+      <a class="chat-exit" href="{{ url_for('main.index') }}">Return to welcome</a>
+    </section>
+  </section>
+  <script defer src="{{ url_for('static', filename='js/screen.js') }}"></script>
 {% endblock %}

@@ -64,7 +64,12 @@ def compute_cost_usd(
 
 
 def estimate_input_tokens(messages: Any) -> int:
-    """Estimate prompt tokens for preflight using UTF-8 bytes as a safety bound."""
+    """Conservatively approximate prompt tokens as half the serialized UTF-8 bytes.
+
+    This errs high for ordinary English prompts without treating every byte as
+    a token, which otherwise blocks multi-turn chats well before the configured
+    token cap. Provider-reported usage remains the source of recorded totals.
+    """
     def encode_object(value: Any) -> Any:
         if hasattr(value, "model_dump"):
             return value.model_dump()
@@ -78,4 +83,5 @@ def estimate_input_tokens(messages: Any) -> int:
         separators=(",", ":"),
         default=encode_object,
     )
-    return len(serialized.encode("utf-8"))
+    byte_count = len(serialized.encode("utf-8"))
+    return (byte_count + 1) // 2

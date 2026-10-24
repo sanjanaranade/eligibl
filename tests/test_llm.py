@@ -72,6 +72,23 @@ def test_cost_math_uses_distinct_cached_input_rate():
     assert compute_cost_usd(100, 20, 10, pricing) == pytest.approx(0.000105)
 
 
+def test_preflight_prompt_estimate_is_conservative_without_counting_every_byte_as_a_token():
+    messages = [{"role": "user", "content": "A short English prompt."}]
+    serialized = json.dumps(messages, ensure_ascii=False, separators=(",", ":"))
+    assert llm.estimate_input_tokens(messages) == (len(serialized.encode("utf-8")) + 1) // 2
+
+
+def test_call_agent_can_lower_but_not_raise_configured_output_cap(tmp_path, monkeypatch):
+    configure_test_paths(tmp_path, monkeypatch)
+    client = FakeClient([response()])
+    monkeypatch.setattr(llm, "create_client", lambda: client)
+    messages = [{"role": "system", "content": "Fixed."}, {"role": "user", "content": "Reply."}]
+
+    llm.call_agent("small_reply_agent", messages, max_output_tokens=70)
+
+    assert client.responses.requests[0]["max_output_tokens"] == 70
+
+
 def test_usage_is_logged_to_jsonl_database_and_trace(tmp_path, monkeypatch):
     database, usage_log, _ = configure_test_paths(tmp_path, monkeypatch)
     client = FakeClient([response()])
@@ -152,6 +169,8 @@ def test_registered_tool_is_run_and_tool_round_is_logged(tmp_path, monkeypatch):
         name="lookup_study",
         arguments='{"criterion_id":"C1"}',
         call_id="call_1",
+        status="completed",
+        id="fc_output_only_id",
     )
     client = FakeClient([response(text="", output=[function_call]), response("Found C1")])
     monkeypatch.setattr(llm, "create_client", lambda: client)
@@ -189,6 +208,13 @@ def test_registered_tool_is_run_and_tool_round_is_logged(tmp_path, monkeypatch):
     assert usage["calls"] == 2
     assert usage["tool_calls"] == 1
     assert client.responses.requests[0]["tools"][0]["name"] == "lookup_study"
+    echoed_call = client.responses.requests[1]["input"][-2]
+    assert echoed_call == {
+        "type": "function_call",
+        "call_id": "call_1",
+        "name": "lookup_study",
+        "arguments": '{"criterion_id":"C1"}',
+    }
     assert client.responses.requests[1]["input"][-1]["type"] == "function_call_output"
 
 

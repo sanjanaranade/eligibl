@@ -21,6 +21,28 @@ CREATE TABLE IF NOT EXISTS candidates (
     coordinator_status TEXT NOT NULL DEFAULT 'pending'
         CHECK (coordinator_status IN ('pending', 'approved', 'rejected'))
 );
+CREATE TABLE IF NOT EXISTS screening_sessions (
+    candidate_id TEXT PRIMARY KEY REFERENCES candidates(id),
+    consent_given INTEGER NOT NULL CHECK (consent_given IN (0, 1)),
+    status TEXT NOT NULL DEFAULT 'in_progress'
+        CHECK (status IN ('in_progress', 'completed', 'turn_limit')),
+    protocol_json TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    completed_at TEXT
+);
+CREATE TABLE IF NOT EXISTS candidate_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    candidate_id TEXT NOT NULL REFERENCES candidates(id),
+    role TEXT NOT NULL CHECK (role IN ('assistant', 'user')),
+    content TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS candidate_concerns (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    candidate_id TEXT NOT NULL REFERENCES candidates(id),
+    reason TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
 CREATE TABLE IF NOT EXISTS criterion_verdicts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     candidate_id TEXT NOT NULL REFERENCES candidates(id),
@@ -129,6 +151,9 @@ def init_db(database: str | Path) -> None:
         )
         connection.execute(
             "CREATE INDEX IF NOT EXISTS idx_model_calls_candidate ON model_call_logs(candidate_id)"
+        )
+        connection.execute(
+            "CREATE INDEX IF NOT EXISTS idx_candidate_messages_candidate ON candidate_messages(candidate_id, id)"
         )
 
 
@@ -243,6 +268,141 @@ def usage_totals_today(database: str | Path, timezone_name: str) -> dict[str, An
             (start_utc, end_utc),
         ).fetchone()
     return {**dict(row), "date": local_now.date().isoformat(), "timezone": timezone_name}
+
+
+def create_candidate_screening(
+    database: str | Path,
+    candidate_id: str,
+    first_name: str,
+    protocol: dict[str, Any],
+) -> None:
+    """Create a synthetic candidate and persist the protocol snapshot they saw."""
+    now = datetime.now(UTC).isoformat()
+    with session(database) as connection:
+        connection.execute(
+            "INSERT INTO candidates(id, created_at, display_name) VALUES (?, ?, ?)",
+            (candidate_id, now, first_name),
+        )
+        connection.execute(
+            """INSERT INTO screening_sessions(candidate_id, consent_given, protocol_json, created_at)
+               VALUES (?, 1, ?, ?)""",
+            (candidate_id, json.dumps(protocol, ensure_ascii=False), now),
+        )
+
+
+def get_screening_session(database: str | Path, candidate_id: str) -> dict[str, Any] | None:
+    """Return a candidate's screening session without exposing other sessions."""
+    with session(database) as connection:
+        row = connection.execute(
+            """SELECT c.id, c.display_name, s.consent_given, s.status, s.protocol_json,
+                      s.created_at, s.completed_at
+               FROM candidates AS c JOIN screening_sessions AS s ON s.candidate_id = c.id
+               WHERE c.id = ?""",
+            (candidate_id,),
+        ).fetchone()
+    if row is None:
+        return None
+    result = dict(row)
+    result["protocol"] = json.loads(result.pop("protocol_json"))
+    return result
+
+
+def save_candidate_message(
+    database: str | Path,
+    candidate_id: str,
+    role: str,
+    content: str,
+) -> None:
+    """Append one candidate or assistant message to the persisted chat."""
+    if role not in {"user", "assistant"}:
+        raise ValueError("Chat role must be user or assistant.")
+    with session(database) as connection:
+        connection.execute(
+            "INSERT INTO candidate_messages(candidate_id, role, content, created_at) VALUES (?, ?, ?, ?)",
+            (candidate_id, role, content, datetime.now(UTC).isoformat()),
+        )
+
+
+def get_candidate_messages(database: str | Path, candidate_id: str) -> list[dict[str, str]]:
+    """Return ordered chat messages for one candidate session."""
+    with session(database) as connection:
+        rows = connection.execute(
+            "SELECT role, content, created_at FROM candidate_messages WHERE candidate_id = ? ORDER BY id",
+            (candidate_id,),
+        ).fetchall()
+    return [dict(row) for row in rows]
+
+
+def recorded_criterion_ids(database: str | Path, candidate_id: str) -> set[str]:
+    """Return criteria with a saved screening verdict for this candidate."""
+    with session(database) as connection:
+        rows = connection.execute(
+            "SELECT DISTINCT criterion_id FROM criterion_verdicts WHERE candidate_id = ?",
+            (candidate_id,),
+        ).fetchall()
+    return {row["criterion_id"] for row in rows}
+
+
+def save_criterion_answer(
+    database: str | Path,
+    candidate_id: str,
+    criterion_id: str,
+    verdict: str,
+    evidence_quote: str,
+    note: str,
+) -> None:
+    """Persist one criterion assessment, mapping screener labels to storage labels."""
+    verdict_map = {"satisfied": "met", "not_satisfied": "not_met", "unclear": "unknown"}
+    if verdict not in verdict_map:
+        raise ValueError("Invalid candidate criterion verdict.")
+    with session(database) as connection:
+        existing = connection.execute(
+            "SELECT id FROM criterion_verdicts WHERE candidate_id = ? AND criterion_id = ? ORDER BY id DESC LIMIT 1",
+            (candidate_id, criterion_id),
+        ).fetchone()
+        if existing:
+            connection.execute(
+                "UPDATE criterion_verdicts SET verdict = ?, evidence_quote = ?, rationale = ?, created_at = ? WHERE id = ?",
+                (verdict_map[verdict], evidence_quote, note, datetime.now(UTC).isoformat(), existing["id"]),
+            )
+        else:
+            connection.execute(
+                """INSERT INTO criterion_verdicts(candidate_id, criterion_id, verdict, evidence_quote, rationale, created_at)
+                   VALUES (?, ?, ?, ?, ?, ?)""",
+                (candidate_id, criterion_id, verdict_map[verdict], evidence_quote, note, datetime.now(UTC).isoformat()),
+            )
+
+
+def get_criterion_answers(database: str | Path, candidate_id: str) -> list[dict[str, Any]]:
+    """Return the saved criterion answers for coordinator review and tests."""
+    with session(database) as connection:
+        rows = connection.execute(
+            """SELECT criterion_id, verdict, evidence_quote, rationale AS note, created_at
+               FROM criterion_verdicts WHERE candidate_id = ? ORDER BY id""",
+            (candidate_id,),
+        ).fetchall()
+    return [dict(row) for row in rows]
+
+
+def save_candidate_concern(database: str | Path, candidate_id: str, reason: str) -> None:
+    """Store a coordinator-visible concern raised during a synthetic chat."""
+    with session(database) as connection:
+        connection.execute(
+            "INSERT INTO candidate_concerns(candidate_id, reason, created_at) VALUES (?, ?, ?)",
+            (candidate_id, reason[:500], datetime.now(UTC).isoformat()),
+        )
+
+
+def set_screening_status(database: str | Path, candidate_id: str, status: str) -> None:
+    """Set the chat lifecycle status; this does not decide candidate eligibility."""
+    if status not in {"in_progress", "completed", "turn_limit"}:
+        raise ValueError("Invalid screening lifecycle status.")
+    completed_at = datetime.now(UTC).isoformat() if status != "in_progress" else None
+    with session(database) as connection:
+        connection.execute(
+            "UPDATE screening_sessions SET status = ?, completed_at = ? WHERE candidate_id = ?",
+            (status, completed_at, candidate_id),
+        )
 
 
 def record_trace_step(database: str | Path, record: dict[str, Any]) -> int:
