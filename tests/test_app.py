@@ -36,3 +36,15 @@ def test_all_initial_pages_include_synthetic_footer(tmp_path):
         response = client.get(path)
         assert response.status_code == 200
         assert b"Demo \xc2\xb7 synthetic data only" in response.data
+
+
+def test_usage_today_endpoint_includes_budget_and_zeroed_usage(tmp_path):
+    app = create_app({"TESTING": True, "DATABASE": str(tmp_path / "test.db")})
+
+    response = app.test_client().get("/api/usage/today")
+
+    assert response.status_code == 200
+    assert response.json["daily_budget_usd"] == 2.0
+    assert response.json["cost_usd"] == 0.0
+    assert response.json["budget_remaining_usd"] == 2.0
+    assert response.json["total_tokens"] == 0

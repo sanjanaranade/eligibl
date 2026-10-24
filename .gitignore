@@ -7,4 +7,3 @@ data/*.db
 data/*.sqlite3
 reference_hw/
 logs/*.log
-logs/*.jsonl

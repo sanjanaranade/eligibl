@@ -1,0 +1,13 @@
+{
+  "model": "gpt-6-luna",
+  "currency": "USD",
+  "rates_usd_per_1m_tokens": {
+    "input": 0.15,
+    "cached_input": 0.15,
+    "output": 0.6
+  },
+  "source": "Prior course implementation: Lecture 11/mult_agent_hp_tokenomics/frontend/src/App.tsx (input $0.15, output $0.60 per 1M tokens).",
+  "placeholders": [
+    "cached_input rate: PLACEHOLDER. No cached-token price was recorded in the prior homework; currently estimated at the regular input rate as a conservative fallback. Verify with course staff/Portkey before reporting final cached-token costs."
+  ]
+}
