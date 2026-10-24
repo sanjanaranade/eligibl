@@ -1,0 +1,30 @@
+{
+  "Set A": {
+    "candidate_ids": [
+      "SYN001",
+      "SYN002",
+      "SYN007",
+      "SYN008",
+      "SYN015"
+    ],
+    "planned_counts": {
+      "clearly_eligible": 2,
+      "clearly_not_a_match": 2,
+      "borderline_unclear": 1
+    }
+  },
+  "Set B": {
+    "candidate_ids": [
+      "SYN003",
+      "SYN004",
+      "SYN009",
+      "SYN010",
+      "SYN016"
+    ],
+    "planned_counts": {
+      "clearly_eligible": 2,
+      "clearly_not_a_match": 2,
+      "borderline_unclear": 1
+    }
+  }
+}

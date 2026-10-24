@@ -58,3 +58,9 @@ After the candidate finishes, the verifier first checks each evidence quote agai
 For the BMI criterion, the checklist asks candidates for height and weight with units. The screener can call the tested deterministic BMI calculation tool for metric and imperial measurements; missing measurements/units or a value exactly at a range endpoint (the protocol does not specify endpoint inclusion) remains unclear. The tool calculates only; it does not make an overall eligibility decision.
 
 To verify the chat end to end without a key, run `python -m scripts.simulate_screening`; it uses a mocked model and a temporary SQLite database. For a brief real Portkey smoke run using only a made-up persona and a temporary candidate database, run `python -m scripts.live_screening_smoke`.
+
+## Synthetic evaluation candidates
+
+Run `.venv/bin/python -m scripts.generate_candidates` (or activate `.venv` and run `python -m scripts.generate_candidates`) to recreate `data/synthetic/candidates.json`, `answer_key.csv`, and `user_test_sets.json`. The generator first freezes all 24 planned outcomes and criterion facts in code, then uses the logged `generator` agent through `eligibl/llm.py` to write fictional backstories and natural-language statements. The model cannot choose or revise expected outcomes. All generation calls use only `gpt-6-luna` and appear in `logs/usage.jsonl` and the SQLite usage table.
+
+The answer key is evaluator-only. The screener and verifier do not load any file under `data/synthetic/`; a regression test checks that boundary. The two user-test sets are disjoint and each contains two eligible, two not-a-match, and one borderline persona. SYN014's planned single failure is criterion C2, which requires clinic assessment; its answer-key note records the expected protocol-level outcome and reminds evaluators that the chat must defer that decision pending clinic/coordinator review.
