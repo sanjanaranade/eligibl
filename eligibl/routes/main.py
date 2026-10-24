@@ -10,6 +10,8 @@ from ..db import usage_totals_today
 from ..agents.protocol_parser import SOURCE_PATH, parse_protocol
 from ..agents import screener
 from ..agents import outreach
+from ..agents import insights
+from ..analytics import weekly_funnel_stats
 from ..agents.outreach import DraftValidationError, validate_draft
 from ..budget import BudgetExceeded
 from ..db import (
@@ -47,7 +49,21 @@ def coordinator():
     """Render dashboard metrics and candidate rows from persisted review state."""
     candidates = coordinator_candidates(current_app.config["DATABASE"])
     usage = usage_totals_today(current_app.config["DATABASE"], load_limits()["timezone"])
-    return render_template("coordinator.html", candidates=candidates, usage=usage, budget=load_limits()["daily_budget_usd"])
+    stats = weekly_funnel_stats(current_app.config["DATABASE"], load_limits()["timezone"])
+    return render_template("coordinator.html", candidates=candidates, usage=usage, budget=load_limits()["daily_budget_usd"], analytics=stats)
+
+
+@main_bp.post("/api/coordinator/insights/weekly")
+def weekly_insights():
+    """Generate a PI summary using only weekly aggregate statistics."""
+    if not api_key_found():
+        return jsonify(error="Insights needs PORTKEY_API_KEY in this project folder's .env or its parent folder."), 503
+    try:
+        result = insights.summarize_week(current_app.config["DATABASE"], load_limits()["timezone"])
+    except Exception:
+        current_app.logger.exception("Unable to generate aggregate weekly insights")
+        return jsonify(error="The weekly summary could not be generated. Please try again."), 503
+    return jsonify(summary=result["summary"], usage=result["usage"])
 
 
 @main_bp.get("/coordinator/email-drafts")

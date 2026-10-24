@@ -27,6 +27,20 @@
       <article class="metric-card"><span>Approved</span><strong>{{ candidates|selectattr('coordinator_status','equalto','approved')|list|length }}</strong><small>Coordinator approved</small></article>
       <article class="metric-card"><span>Contacted</span><strong>{{ candidates|selectattr('contacted_at')|list|length }}</strong><small>Outreach marked</small></article>
     </section>
+    <section class="analytics-section" aria-labelledby="analytics-heading">
+      <header class="analytics-heading"><div><p class="eyebrow">LAST 7 DAYS</p><h2 id="analytics-heading">Screening analytics</h2><small>{{ analytics.window }}</small></div><button class="button" id="weekly-insights">Summarize this week</button></header>
+      <p id="insights-feedback" class="insights-feedback" role="status" aria-live="polite"></p>
+      <section id="weekly-summary" class="weekly-summary" hidden aria-live="polite"></section>
+      <div class="analytics-grid">
+        <article class="analytics-card"><h3>Funnel</h3><canvas id="funnel-chart" aria-label="Weekly screening funnel chart"></canvas>
+          <table class="analytics-fallback"><thead><tr><th>Stage</th><th>Count</th><th>Conversion</th></tr></thead><tbody>{% for stage in analytics.funnel %}<tr><td>{{ stage.stage }}</td><td>{{ stage.count }}</td><td>{{ '%.1f'|format(stage.conversion_percent) }}%</td></tr>{% endfor %}</tbody></table>
+        </article>
+        <article class="analytics-card"><h3>Why not a match</h3><canvas id="failures-chart" aria-label="Most frequent unmet criteria"></canvas>
+          <table class="analytics-fallback"><thead><tr><th>Criterion</th><th>Not satisfied</th></tr></thead><tbody>{% for item in analytics.why_not_a_match %}<tr><td>{{ item.label }}</td><td>{{ item.count }}</td></tr>{% else %}<tr><td colspan="2">No not-satisfied criteria in this period.</td></tr>{% endfor %}</tbody></table>
+        </article>
+      </div>
+      <article class="analytics-card screening-stats"><h3>Screening stats</h3><div><span>Average turns</span><strong>{{ analytics.screening_stats.average_turns }}</strong></div><div><span>Average tokens / candidate</span><strong>{{ analytics.screening_stats.average_tokens|round|int }}</strong></div><div><span>Average cost / candidate</span><strong>${{ '%.5f'|format(analytics.screening_stats.average_cost_usd) }}</strong></div><div><span>Today · {{ usage.input_tokens + usage.output_tokens }} tokens</span><strong>${{ '%.5f'|format(usage.cost_usd) }}</strong></div></article>
+    </section>
     <section class="candidate-section" id="candidate-list">
       <div class="list-heading"><div><p class="eyebrow">SCREENING QUEUE</p><h2>Candidates</h2></div><div class="list-controls"><label class="sr-only" for="candidate-search">Search candidates</label><input id="candidate-search" type="search" placeholder="Search names…"><label class="sr-only" for="status-filter">Filter status</label><select id="status-filter"><option value="">All statuses</option><option>Needs review</option><option>Flagged</option><option>Likely eligible</option><option>Not a match</option><option>In progress</option></select><label class="sr-only" for="sort-filter">Sort candidates</label><select id="sort-filter"><option value="recent">Newest first</option><option value="name">Name A–Z</option><option value="decision">Status</option></select></div></div>
       <div class="candidate-table-wrap"><table class="candidate-table"><thead><tr><th>Candidate</th><th>Decision</th><th>Criteria met</th><th>Screened</th></tr></thead><tbody id="candidate-rows">
@@ -43,5 +57,8 @@
   </aside>
 </div>
 <div id="detail-scrim" class="detail-scrim"></div>
+<script id="analytics-data" type="application/json">{{ analytics|tojson }}</script>
+<script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script defer src="{{ url_for('static', filename='js/analytics.js') }}"></script>
 <script defer src="{{ url_for('static', filename='js/coordinator.js') }}"></script>
 {% endblock %}
