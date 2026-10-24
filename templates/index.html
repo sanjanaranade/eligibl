@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Eligibl — study screening{% endblock %}
+{% block content %}
+  <section class="welcome">
+    <p class="eyebrow">Clinical research, made clearer</p>
+    <h1>Welcome to Eligibl</h1>
+    <p class="lede">A coordinator-reviewed study screening demo using synthetic candidate data.</p>
+    {% if not has_api_key %}
+      <p class="notice" role="status">Model screening is not configured yet. Add <code>PORTKEY_API_KEY</code> to a <code>.env</code> file in this project folder or its parent folder.</p>
+    {% endif %}
+    <div class="cards">
+      <a class="card" href="{{ url_for('main.coordinator') }}">
+        <span class="card-kicker">Study team</span><strong>I'm a coordinator</strong>
+        <span>Review candidate screening and outreach drafts.</span>
+      </a>
+      <a class="card" href="{{ url_for('main.screen') }}">
+        <span class="card-kicker">Participant</span><strong>I'm here to be screened</strong>
+        <span>Answer questions about a study's criteria.</span>
+      </a>
+    </div>
+  </section>
+{% endblock %}

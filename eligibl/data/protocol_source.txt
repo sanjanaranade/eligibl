@@ -1,0 +1,23 @@
+Study title: Saffron Extract Supplementation and Sleep Quality in Middle-Aged Adults
+NCT number: NCT07497698
+Source: https://clinicaltrials.gov/study/NCT07497698
+
+Eligibility Criteria:
+
+Inclusion Criteria:
+
+* Age 18-65 years
+* Mild-to-moderate sleep disturbances
+* BMI between 18 and 35 kg/m²
+* Not receiving active pharmacological or psychological treatment for sleep disorders
+* Willingness to comply with study procedures
+
+Exclusion Criteria:
+
+* Severe neurological, psychiatric, or cardiovascular disorders
+* Diagnosed with obstructive sleep apnea, treated with CPAP
+* Night shift workers
+* Use of medications or supplements affecting sleep
+* Recreational drug use
+* Pregnancy or breastfeeding
+* Uncontrolled medical conditions
