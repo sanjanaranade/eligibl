@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Study protocol — Eligibl{% endblock %}
+{% block content %}
+  <p class="eyebrow">Coordinator workspace · Protocol</p>
+  <h1>Study protocol</h1>
+  <p class="lede">Compare the source criteria with a plain-language checklist. This checklist organizes the protocol; it does not decide whether a person is eligible.</p>
+  <div class="protocol-toolbar">
+    <a class="text-link" href="{{ url_for('main.coordinator') }}">← Coordinator dashboard</a>
+    <form method="post"><button class="button" type="submit">Re-parse protocol</button></form>
+  </div>
+  {% if error %}<div class="notice" role="alert">{{ error }}</div>{% endif %}
+  {% if reparsed %}<p class="success-note" role="status">Protocol parsed and validated successfully.</p>{% endif %}
+  {% if protocol %}
+    <section class="study-summary" aria-labelledby="study-title">
+      <div><p class="eyebrow">{{ protocol.nct_id }}</p><h2 id="study-title">{{ protocol.study_title }}</h2></div>
+      <p>{{ protocol.candidate_summary }}</p>
+    </section>
+    <h2>Criteria checklist</h2>
+    <div class="criteria-list">
+      {% for criterion in protocol.criteria %}
+      <article class="criterion-card">
+        <div class="criterion-source">
+          <span class="criterion-label">{{ criterion.id }} · {{ criterion.type }}</span>
+          <h3>Original criterion</h3>
+          <p>{{ criterion.original_text }}</p>
+        </div>
+        <div class="criterion-parsed">
+          <span class="criterion-label">Parsed checklist</span>
+          <h3>{{ criterion.requirement }}</h3>
+          <dl>
+            <dt>Screening question</dt><dd>{{ criterion.screening_question }}</dd>
+            <dt>Counts as satisfied</dt><dd>{{ criterion.satisfied_when }}</dd>
+            <dt>Mark unclear when</dt><dd>{{ criterion.unclear_when }}</dd>
+          </dl>
+          {% if criterion.requires_clinic_check %}<p class="clinic-badge">Checked at clinic visit</p>{% endif %}
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <section class="source-panel"><h2>Protocol source</h2><pre>{{ source }}</pre></section>
+  {% endif %}
+{% endblock %}

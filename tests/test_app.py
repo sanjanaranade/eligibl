@@ -48,3 +48,28 @@ def test_usage_today_endpoint_includes_budget_and_zeroed_usage(tmp_path):
     assert response.json["cost_usd"] == 0.0
     assert response.json["budget_remaining_usd"] == 2.0
     assert response.json["total_tokens"] == 0
+
+
+def test_coordinator_protocol_page_has_friendly_key_message(tmp_path, monkeypatch):
+    from eligibl.routes import main
+
+    monkeypatch.setattr(main, "parse_protocol", lambda **_kwargs: (_ for _ in ()).throw(RuntimeError("missing key")))
+    app = create_app({"TESTING": True, "DATABASE": str(tmp_path / "test.db")})
+
+    response = app.test_client().get("/coordinator/protocol")
+
+    assert response.status_code == 200
+    assert b"PORTKEY_API_KEY" in response.data
+    assert b"Demo \xc2\xb7 synthetic data only" in response.data
+
+
+def test_protocol_page_renders_cached_checklist_without_an_api_call(tmp_path):
+    app = create_app({"TESTING": True, "DATABASE": str(tmp_path / "test.db")})
+
+    response = app.test_client().get("/coordinator/protocol")
+
+    assert response.status_code == 200
+    assert b"NCT07497698" in response.data
+    assert b"Age 18-65 years" in response.data
+    assert b"Checked at clinic visit" in response.data
+    assert b"Re-parse protocol" in response.data

@@ -1,1 +1,1 @@
-"""Agent modules will live here; candidate text must always be treated as untrusted."""
+"""Task-specific agents used by Eligibl."""

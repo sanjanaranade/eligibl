@@ -1,10 +1,11 @@
 """Welcome, coordinator, screening, and health routes."""
 
-from flask import Blueprint, current_app, jsonify, render_template
+from flask import Blueprint, current_app, jsonify, render_template, request
 
 from ..budget import load_limits
 from ..config import api_key_found
 from ..db import usage_totals_today
+from ..agents.protocol_parser import SOURCE_PATH, parse_protocol
 
 
 main_bp = Blueprint("main", __name__)
@@ -26,6 +27,26 @@ def index():
 def coordinator():
     """Render the initial coordinator dashboard placeholder."""
     return render_template("coordinator.html")
+
+
+@main_bp.route("/coordinator/protocol", methods=["GET", "POST"])
+def coordinator_protocol():
+    """Show the source protocol beside its validated parsed checklist."""
+    force = request.method == "POST"
+    try:
+        protocol = parse_protocol(force=force)
+        source = SOURCE_PATH.read_text(encoding="utf-8")
+        error = None
+    except RuntimeError:
+        protocol = None
+        source = SOURCE_PATH.read_text(encoding="utf-8")
+        error = "The model key is not configured. Add PORTKEY_API_KEY to .env in this project folder or its parent, then try again."
+    except Exception:
+        current_app.logger.exception("Unable to parse the study protocol")
+        protocol = None
+        source = SOURCE_PATH.read_text(encoding="utf-8")
+        error = "The protocol could not be parsed or validated. Check the model connection and try again."
+    return render_template("protocol.html", protocol=protocol, source=source, error=error, reparsed=force and protocol is not None)
 
 
 @main_bp.get("/screen")

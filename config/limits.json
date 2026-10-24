@@ -4,7 +4,7 @@
   "max_tokens_per_candidate": 25000,
   "max_tool_call_loops_per_agent_turn": 5,
   "daily_budget_usd": 2.0,
-  "max_output_tokens_per_call": 1200,
+  "max_output_tokens_per_call": 3000,
   "max_api_retries": 2,
   "retry_backoff_seconds": 0.25,
   "timezone": "America/New_York"

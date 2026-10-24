@@ -1,0 +1,127 @@
+{
+  "study_title": "Saffron Extract Supplementation and Sleep Quality in Middle-Aged Adults",
+  "nct_id": "NCT07497698",
+  "candidate_summary": "This study looks at saffron extract supplementation and sleep quality in adults. To take part, you must be 18 to 65, have mild-to-moderate sleep disturbances, and meet the other listed requirements. The study also lists health conditions, treatments, and other factors that may prevent someone from joining.",
+  "criteria": [
+    {
+      "id": "C1",
+      "type": "inclusion",
+      "original_text": "Age 18-65 years",
+      "requirement": "You must be 18 to 65 years old.",
+      "screening_question": "Are you between 18 and 65 years old?",
+      "satisfied_when": "You are within the stated age range.",
+      "unclear_when": "Your age cannot be confirmed or the information provided is inconsistent.",
+      "requires_clinic_check": false
+    },
+    {
+      "id": "C2",
+      "type": "inclusion",
+      "original_text": "Mild-to-moderate sleep disturbances",
+      "requirement": "You must have mild-to-moderate sleep disturbances.",
+      "screening_question": "Do you have mild-to-moderate sleep disturbances?",
+      "satisfied_when": "An assessment confirms that your sleep disturbances are mild to moderate.",
+      "unclear_when": "The severity of your sleep disturbances has not been assessed or is uncertain.",
+      "requires_clinic_check": true
+    },
+    {
+      "id": "C3",
+      "type": "inclusion",
+      "original_text": "BMI between 18 and 35 kg/m²",
+      "requirement": "Your BMI must be between 18 and 35 kg/m².",
+      "screening_question": "Is your BMI between 18 and 35 kg/m²?",
+      "satisfied_when": "A BMI measurement confirms that it is within the stated range.",
+      "unclear_when": "A BMI measurement is unavailable, or it is unclear whether a value at a range boundary qualifies.",
+      "requires_clinic_check": true
+    },
+    {
+      "id": "C4",
+      "type": "inclusion",
+      "original_text": "Not receiving active pharmacological or psychological treatment for sleep disorders",
+      "requirement": "You must not be receiving active pharmacological or psychological treatment for sleep disorders.",
+      "screening_question": "Are you currently receiving medication-based or psychological treatment for a sleep disorder?",
+      "satisfied_when": "You are not receiving either type of active treatment for a sleep disorder.",
+      "unclear_when": "Your current treatment status or whether a treatment is active is uncertain.",
+      "requires_clinic_check": false
+    },
+    {
+      "id": "C5",
+      "type": "inclusion",
+      "original_text": "Willingness to comply with study procedures",
+      "requirement": "You must be willing to comply with study procedures.",
+      "screening_question": "Are you willing to follow the study procedures?",
+      "satisfied_when": "You confirm that you are willing to follow the study procedures.",
+      "unclear_when": "You have not yet confirmed your willingness to follow the procedures.",
+      "requires_clinic_check": false
+    },
+    {
+      "id": "C6",
+      "type": "exclusion",
+      "original_text": "Severe neurological, psychiatric, or cardiovascular disorders",
+      "requirement": "You must NOT have severe neurological, psychiatric, or cardiovascular disorders.",
+      "screening_question": "Do you have a severe neurological, psychiatric, or cardiovascular disorder?",
+      "satisfied_when": "You do not have any of the listed severe disorders.",
+      "unclear_when": "It is uncertain whether you have one of these disorders or whether it is severe.",
+      "requires_clinic_check": true
+    },
+    {
+      "id": "C7",
+      "type": "exclusion",
+      "original_text": "Diagnosed with obstructive sleep apnea, treated with CPAP",
+      "requirement": "You must NOT be diagnosed with obstructive sleep apnea and treated with CPAP.",
+      "screening_question": "Have you been diagnosed with obstructive sleep apnea and treated with CPAP?",
+      "satisfied_when": "You do not meet both conditions: an obstructive sleep apnea diagnosis and treatment with CPAP.",
+      "unclear_when": "Your diagnosis or CPAP treatment status is uncertain.",
+      "requires_clinic_check": true
+    },
+    {
+      "id": "C8",
+      "type": "exclusion",
+      "original_text": "Night shift workers",
+      "requirement": "You must NOT be a night shift worker.",
+      "screening_question": "Do you work night shifts?",
+      "satisfied_when": "You do not work night shifts.",
+      "unclear_when": "Your work schedule or whether it counts as night-shift work is uncertain.",
+      "requires_clinic_check": false
+    },
+    {
+      "id": "C9",
+      "type": "exclusion",
+      "original_text": "Use of medications or supplements affecting sleep",
+      "requirement": "You must NOT use medications or supplements that affect sleep.",
+      "screening_question": "Do you use any medications or supplements that affect sleep?",
+      "satisfied_when": "You do not use medications or supplements that affect sleep.",
+      "unclear_when": "The effect on sleep of a medication or supplement you use is uncertain.",
+      "requires_clinic_check": true
+    },
+    {
+      "id": "C10",
+      "type": "exclusion",
+      "original_text": "Recreational drug use",
+      "requirement": "You must NOT use recreational drugs.",
+      "screening_question": "Do you use recreational drugs?",
+      "satisfied_when": "You do not use recreational drugs.",
+      "unclear_when": "Your recreational drug use status is not known or is uncertain.",
+      "requires_clinic_check": false
+    },
+    {
+      "id": "C11",
+      "type": "exclusion",
+      "original_text": "Pregnancy or breastfeeding",
+      "requirement": "You must NOT be pregnant or breastfeeding.",
+      "screening_question": "Are you pregnant or breastfeeding?",
+      "satisfied_when": "You are neither pregnant nor breastfeeding.",
+      "unclear_when": "Your pregnancy or breastfeeding status is uncertain.",
+      "requires_clinic_check": false
+    },
+    {
+      "id": "C12",
+      "type": "exclusion",
+      "original_text": "Uncontrolled medical conditions",
+      "requirement": "You must NOT have uncontrolled medical conditions.",
+      "screening_question": "Do you have any uncontrolled medical conditions?",
+      "satisfied_when": "You do not have any uncontrolled medical conditions.",
+      "unclear_when": "It is uncertain whether a medical condition is present or controlled.",
+      "requires_clinic_check": true
+    }
+  ]
+}
