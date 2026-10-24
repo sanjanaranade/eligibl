@@ -268,6 +268,8 @@ def submit_candidate_message(database: str, candidate_id: str, text: str) -> dic
     if session["status"] != "in_progress":
         return _view(database, candidate_id)
     db.save_candidate_message(database, candidate_id, "user", text)
+    if re.search(r"\b(ignore|disregard|override|forget)\b.{0,60}\b(instruction|rule|prompt|system|tool|policy)s?\b|\b(reveal|show|print)\b.{0,50}\b(other candidate|another candidate|system prompt|api key)\b", text, re.IGNORECASE):
+        db.flag_injection(database, candidate_id, "Instruction-like request detected in candidate text.")
     return _run_agent_turn(database, candidate_id, start=False, latest_text=text)
 
 
@@ -321,4 +323,8 @@ def _run_agent_turn(
             answer = "I can't give medical advice. Please ask your doctor or the study team. " + current["screening_question"]
 
     db.save_candidate_message(database, candidate_id, "assistant", answer)
+    if current is None and db.get_screening_session(database, candidate_id)["status"] == "completed":
+        from .verifier import verify_screening
+
+        verify_screening(database, candidate_id)
     return _view(database, candidate_id, answer)

@@ -8,8 +8,17 @@ from eligibl.agents.screening_tools import calculate_bmi
 from eligibl.budget import BudgetExceeded
 from eligibl.llm import _candidate_text_for_limit
 from eligibl.config import REPO_ROOT
-from eligibl.db import get_criterion_answers, get_candidate_messages
-from eligibl.db import create_candidate_screening, init_db, get_screening_session
+from eligibl.db import (
+    coordinator_candidates,
+    coordinator_detail,
+    create_candidate_screening,
+    get_candidate_messages,
+    get_criterion_answers,
+    get_screening_session,
+    init_db,
+    save_candidate_message,
+    save_criterion_answer,
+)
 
 
 def test_chat_skips_clinic_only_criteria():
@@ -135,6 +144,14 @@ def test_simulated_candidate_chat_records_age_and_calculated_bmi(tmp_path, monke
         return reply, {"input": 10, "cached_input": 0, "output": 12}
 
     monkeypatch.setattr(screener, "call_agent", mock_call_agent)
+    monkeypatch.setattr(
+        screener.db, "flag_injection",
+        lambda database, candidate_id, reason: screener.db.save_candidate_concern(database, candidate_id, reason),
+    )
+    monkeypatch.setattr(
+        "eligibl.agents.verifier.call_agent",
+        lambda *args, **kwargs: (json.dumps({"summary": "Synthetic answers were reviewed.", "downgrades": []}), {}),
+    )
     client = app.test_client()
     response = client.post("/api/screen/start", json={"first_name": "Alex", "consent": True})
     assert response.status_code == 200
@@ -204,3 +221,31 @@ def test_chat_form_enforces_consent_and_message_length(tmp_path):
     assert response.status_code == 400
     too_long = client.post("/api/screen/00000000-0000-0000-0000-000000000000/message", json={"message": "x" * 801})
     assert too_long.status_code == 413
+
+
+def test_completion_runs_verifier_then_computes_coordinator_decision(tmp_path, monkeypatch):
+    protocol = json.loads((REPO_ROOT / "data" / "protocol.json").read_text(encoding="utf-8"))
+    database = str(tmp_path / "completed-review.db")
+    init_db(database)
+    candidate_id = "completed-review-test"
+    create_candidate_screening(database, candidate_id, "Maya", protocol)
+    criteria = screener.chat_criteria(protocol)
+    for criterion in criteria:
+        quote = f"Synthetic response for {criterion['id']}"
+        save_candidate_message(database, candidate_id, "user", quote)
+        save_criterion_answer(database, candidate_id, criterion["id"], "satisfied", quote, "Synthetic evidence")
+
+    monkeypatch.setattr(screener, "call_agent", lambda *args, **kwargs: ("Screening complete.", {}))
+    monkeypatch.setattr(
+        "eligibl.agents.verifier.call_agent",
+        lambda *args, **kwargs: (json.dumps({"summary": "The synthetic answers match the recorded evidence.", "downgrades": []}), {}),
+    )
+
+    result = screener._run_agent_turn(database, candidate_id, start=False, latest_text="Final synthetic response")
+
+    assert result["status"] == "completed"
+    candidate = coordinator_candidates(database)[0]
+    assert candidate["decision_label"] == "Likely eligible"
+    assert candidate["verifier_status"] == "complete"
+    detail = coordinator_detail(database, candidate_id)
+    assert detail["verifier_summary"] == "The synthetic answers match the recorded evidence."

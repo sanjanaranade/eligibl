@@ -19,7 +19,12 @@ CREATE TABLE IF NOT EXISTS candidates (
     screening_result TEXT NOT NULL DEFAULT 'pending'
         CHECK (screening_result IN ('pending', 'potentially_eligible', 'not_eligible', 'uncertain')),
     coordinator_status TEXT NOT NULL DEFAULT 'pending'
-        CHECK (coordinator_status IN ('pending', 'approved', 'rejected'))
+        CHECK (coordinator_status IN ('pending', 'approved', 'rejected')),
+    decision_label TEXT NOT NULL DEFAULT 'Needs review',
+    verifier_summary TEXT NOT NULL DEFAULT '',
+    verifier_status TEXT NOT NULL DEFAULT 'pending',
+    override_reason TEXT NOT NULL DEFAULT '',
+    contacted_at TEXT
 );
 CREATE TABLE IF NOT EXISTS screening_sessions (
     candidate_id TEXT PRIMARY KEY REFERENCES candidates(id),
@@ -41,6 +46,13 @@ CREATE TABLE IF NOT EXISTS candidate_concerns (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     candidate_id TEXT NOT NULL REFERENCES candidates(id),
     reason TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS coordinator_actions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    candidate_id TEXT NOT NULL REFERENCES candidates(id),
+    action TEXT NOT NULL,
+    reason TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS criterion_verdicts (
@@ -146,6 +158,17 @@ def init_db(database: str | Path) -> None:
             connection.execute("UPDATE model_call_logs SET timestamp = created_at WHERE timestamp IS NULL")
         if "run_id" not in columns:
             connection.execute("ALTER TABLE model_call_logs ADD COLUMN run_id TEXT")
+        candidate_columns = {row["name"] for row in connection.execute("PRAGMA table_info(candidates)")}
+        migrations = {
+            "decision_label": "TEXT NOT NULL DEFAULT 'Needs review'",
+            "verifier_summary": "TEXT NOT NULL DEFAULT ''",
+            "verifier_status": "TEXT NOT NULL DEFAULT 'pending'",
+            "override_reason": "TEXT NOT NULL DEFAULT ''",
+            "contacted_at": "TEXT",
+        }
+        for name, declaration in migrations.items():
+            if name not in candidate_columns:
+                connection.execute(f"ALTER TABLE candidates ADD COLUMN {name} {declaration}")
         connection.execute(
             "CREATE INDEX IF NOT EXISTS idx_model_calls_timestamp ON model_call_logs(timestamp)"
         )
@@ -403,6 +426,164 @@ def set_screening_status(database: str | Path, candidate_id: str, status: str) -
             "UPDATE screening_sessions SET status = ?, completed_at = ? WHERE candidate_id = ?",
             (status, completed_at, candidate_id),
         )
+
+
+def save_verification(database: str | Path, candidate_id: str, summary: str, status: str) -> None:
+    """Persist verifier output/status and the code-computed decision label."""
+    from .decision import classify_candidate
+
+    session_data = get_screening_session(database, candidate_id)
+    if session_data is None:
+        raise LookupError("Candidate not found.")
+    answers = get_criterion_answers(database, candidate_id)
+    concerns = get_candidate_concerns(database, candidate_id)
+    flags = has_injection_flag(database, candidate_id)
+    decision = classify_candidate(
+        [row for row in answers],
+        concerns=concerns,
+        injection_flag=flags,
+        required_criteria=[row["id"] for row in session_data["protocol"]["criteria"] if not row["requires_clinic_check"]],
+        verification_complete=status == "complete",
+    )
+    with session(database) as connection:
+        connection.execute(
+            "UPDATE candidates SET verifier_summary = ?, verifier_status = ?, decision_label = ? WHERE id = ?",
+            (summary[:1000], status, decision, candidate_id),
+        )
+
+
+def get_candidate_concerns(database: str | Path, candidate_id: str) -> list[dict[str, Any]]:
+    """Return explicitly raised coordinator review concerns for one candidate."""
+    with session(database) as connection:
+        rows = connection.execute(
+            "SELECT reason, created_at FROM candidate_concerns WHERE candidate_id = ? ORDER BY id",
+            (candidate_id,),
+        ).fetchall()
+    return [dict(row) for row in rows]
+
+
+def flag_injection(
+    database: str | Path, candidate_id: str, reason: str, log_path: str | Path | None = None
+) -> None:
+    """Record a detected candidate prompt-injection attempt for coordinator review."""
+    save_candidate_concern(database, candidate_id, "Possible prompt injection: " + reason[:400])
+    record_safety_event(
+        database, log_path or Path(__file__).resolve().parents[1] / "logs" / "safety.jsonl",
+        event="candidate_injection_flag", limit_name="prompt_injection",
+        details={"reason": reason[:400]}, agent="candidate_screener", candidate_id=candidate_id,
+    )
+
+
+def has_injection_flag(database: str | Path, candidate_id: str) -> bool:
+    """Return whether a candidate has a recorded prompt-injection flag."""
+    with session(database) as connection:
+        row = connection.execute(
+            "SELECT 1 FROM safety_events WHERE candidate_id = ? AND event = 'candidate_injection_flag' LIMIT 1",
+            (candidate_id,),
+        ).fetchone()
+    return row is not None
+
+
+def record_coordinator_action(
+    database: str | Path, candidate_id: str, action: str, reason: str = "", target_label: str = ""
+) -> None:
+    """Append a timestamped coordinator action and update review state."""
+    now = datetime.now(UTC).isoformat()
+    with session(database) as connection:
+        if action == "approve":
+            connection.execute("UPDATE candidates SET coordinator_status='approved', override_reason='' WHERE id=?", (candidate_id,))
+        elif action == "mark_not_match":
+            connection.execute("UPDATE candidates SET coordinator_status='rejected', decision_label='Not a match' WHERE id=?", (candidate_id,))
+        elif action == "override":
+            allowed = {"Flagged", "Not a match", "Needs review", "Likely eligible"}
+            if target_label not in allowed or not reason.strip():
+                raise ValueError("Choose a valid decision and provide an override reason.")
+            connection.execute("UPDATE candidates SET decision_label=?, override_reason=? WHERE id=?", (target_label, reason[:1000], candidate_id))
+        elif action == "contacted":
+            connection.execute("UPDATE candidates SET contacted_at=? WHERE id=?", (now, candidate_id))
+        else:
+            raise ValueError("Unsupported coordinator action.")
+        connection.execute(
+            "INSERT INTO coordinator_actions(candidate_id,action,reason,created_at) VALUES(?,?,?,?)",
+            (candidate_id, action, reason[:1000], now),
+        )
+
+
+def coordinator_candidates(database: str | Path) -> list[dict[str, Any]]:
+    """Return candidates and compact review metrics for the coordinator table."""
+    with session(database) as connection:
+        rows = connection.execute(
+            """SELECT c.*, s.status AS session_status, s.protocol_json, s.created_at AS screening_started,
+                      s.completed_at,
+                      (SELECT COUNT(*) FROM criterion_verdicts v WHERE v.candidate_id=c.id AND v.verdict='met') AS criteria_met,
+                      (SELECT COUNT(*) FROM criterion_verdicts v WHERE v.candidate_id=c.id) AS criteria_answered,
+                      (SELECT COALESCE(SUM(l.input_tokens+l.output_tokens),0) FROM model_call_logs l WHERE l.candidate_id=c.id) AS total_tokens,
+                      (SELECT COALESCE(SUM(l.cost_usd),0) FROM model_call_logs l WHERE l.candidate_id=c.id) AS total_cost,
+                      EXISTS(SELECT 1 FROM candidate_concerns x WHERE x.candidate_id=c.id) AS has_concern,
+                      EXISTS(SELECT 1 FROM safety_events e WHERE e.candidate_id=c.id AND e.event='candidate_injection_flag') AS injection_flag
+               FROM candidates c LEFT JOIN screening_sessions s ON s.candidate_id=c.id ORDER BY c.created_at DESC"""
+        ).fetchall()
+    results = []
+    for row in rows:
+        item = dict(row)
+        protocol = json.loads(item.pop("protocol_json") or "{}")
+        item["criteria_total"] = sum(not criterion.get("requires_clinic_check", False) for criterion in protocol.get("criteria", []))
+        flagged = bool(item["has_concern"] or item["injection_flag"])
+        if flagged and not item["override_reason"]:
+            item["decision_label"] = "Flagged"
+        item["display_status"] = (
+            item["decision_label"]
+            if item["session_status"] == "completed" or flagged or item["override_reason"]
+            else "In progress"
+        )
+        results.append(item)
+    return results
+
+
+def get_safety_events(database: str | Path) -> list[dict[str, Any]]:
+    """Return safety events with decoded, secret-free details for the coordinator."""
+    with session(database) as connection:
+        rows = connection.execute(
+            "SELECT timestamp,event,agent,candidate_id,limit_name,details_json FROM safety_events ORDER BY id DESC LIMIT 200"
+        ).fetchall()
+    result = []
+    for row in rows:
+        item = dict(row)
+        item["details"] = json.loads(item.pop("details_json"))
+        result.append(item)
+    return result
+
+
+def coordinator_detail(database: str | Path, candidate_id: str) -> dict[str, Any] | None:
+    """Gather one candidate's evidence, transcript, trace, costs, and actions."""
+    candidates = coordinator_candidates(database)
+    candidate = next((row for row in candidates if row["id"] == candidate_id), None)
+    if candidate is None:
+        return None
+    session_data = get_screening_session(database, candidate_id)
+    criteria = session_data["protocol"]["criteria"] if session_data else []
+    answers = {row["criterion_id"]: row for row in get_criterion_answers(database, candidate_id)}
+    with session(database) as connection:
+        actions = [dict(row) for row in connection.execute(
+            "SELECT action, reason, created_at FROM coordinator_actions WHERE candidate_id=? ORDER BY id", (candidate_id,)
+        )]
+        traces = [dict(row) for row in connection.execute(
+            "SELECT run_id,step_number,agent,input_summary,tool_calls_json,output_summary,input_tokens,cached_input_tokens,output_tokens,timestamp FROM agent_trace_steps WHERE candidate_id=? ORDER BY timestamp,step_number", (candidate_id,)
+        )]
+        usages = [dict(row) for row in connection.execute(
+            "SELECT input_tokens,cached_input_tokens,output_tokens,cost_usd,latency_ms,agent,timestamp FROM model_call_logs WHERE candidate_id=? ORDER BY timestamp", (candidate_id,)
+        )]
+    for trace in traces:
+        trace["tool_calls"] = json.loads(trace.pop("tool_calls_json"))
+    candidate.update(
+        criteria=[{**criterion, "answer": answers.get(criterion["id"])} for criterion in criteria],
+        transcript=get_candidate_messages(database, candidate_id),
+        concerns=get_candidate_concerns(database, candidate_id),
+        actions=actions,
+        trace=traces,
+        usages=usages,
+    )
+    return candidate
 
 
 def record_trace_step(database: str | Path, record: dict[str, Any]) -> int:

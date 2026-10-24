@@ -11,8 +11,12 @@ from ..agents.protocol_parser import SOURCE_PATH, parse_protocol
 from ..agents import screener
 from ..budget import BudgetExceeded
 from ..db import (
+    coordinator_candidates,
+    coordinator_detail,
     get_candidate_messages,
+    get_safety_events,
     get_screening_session,
+    record_coordinator_action,
     recorded_criterion_ids,
 )
 
@@ -34,8 +38,61 @@ def index():
 
 @main_bp.get("/coordinator")
 def coordinator():
-    """Render the initial coordinator dashboard placeholder."""
-    return render_template("coordinator.html")
+    """Render dashboard metrics and candidate rows from persisted review state."""
+    candidates = coordinator_candidates(current_app.config["DATABASE"])
+    usage = usage_totals_today(current_app.config["DATABASE"], load_limits()["timezone"])
+    return render_template("coordinator.html", candidates=candidates, usage=usage, budget=load_limits()["daily_budget_usd"])
+
+
+@main_bp.get("/coordinator/email-drafts")
+def coordinator_email_drafts():
+    """Show draft-only outreach status without sending messages."""
+    limits = load_limits()
+    usage = usage_totals_today(current_app.config["DATABASE"], limits["timezone"])
+    return render_template("coordinator_simple.html", heading="Email drafts", description="Outreach drafts will be available here. Eligibl never sends email.", active="Email drafts", usage=usage, budget=limits["daily_budget_usd"])
+
+
+@main_bp.get("/coordinator/safety")
+def coordinator_safety():
+    """Render the recent safety-event audit list."""
+    limits = load_limits()
+    usage = usage_totals_today(current_app.config["DATABASE"], limits["timezone"])
+    return render_template("coordinator_simple.html", heading="Safety log", description="Recent safety events recorded by the application.", active="Safety log", events=get_safety_events(current_app.config["DATABASE"]), usage=usage, budget=limits["daily_budget_usd"])
+
+
+@main_bp.get("/api/coordinator/candidates")
+def coordinator_candidates_api():
+    """Return candidate rows for dashboard search and client-side sorting."""
+    return jsonify(candidates=coordinator_candidates(current_app.config["DATABASE"]))
+
+
+@main_bp.get("/api/coordinator/candidates/<candidate_id>")
+def coordinator_candidate_api(candidate_id: str):
+    """Return the evidence and audit detail for one selected candidate."""
+    detail = coordinator_detail(current_app.config["DATABASE"], candidate_id)
+    if detail is None:
+        return jsonify(error="Candidate not found."), 404
+    return jsonify(detail)
+
+
+@main_bp.post("/api/coordinator/candidates/<candidate_id>/actions")
+def coordinator_candidate_action(candidate_id: str):
+    """Record a timestamped coordinator decision/action."""
+    if coordinator_detail(current_app.config["DATABASE"], candidate_id) is None:
+        return jsonify(error="Candidate not found."), 404
+    payload = request.get_json(silent=True) or {}
+    action = str(payload.get("action", ""))
+    reason = str(payload.get("reason", "")).strip()
+    try:
+        if action == "override" and not reason:
+            return jsonify(error="An override reason is required."), 400
+        record_coordinator_action(
+            current_app.config["DATABASE"], candidate_id, action,
+            reason, str(payload.get("decision", "")),
+        )
+    except ValueError as exc:
+        return jsonify(error=str(exc)), 400
+    return jsonify(candidate=coordinator_detail(current_app.config["DATABASE"], candidate_id))
 
 
 @main_bp.route("/coordinator/protocol", methods=["GET", "POST"])
@@ -55,7 +112,9 @@ def coordinator_protocol():
         protocol = None
         source = SOURCE_PATH.read_text(encoding="utf-8")
         error = "The protocol could not be parsed or validated. Check the model connection and try again."
-    return render_template("protocol.html", protocol=protocol, source=source, error=error, reparsed=force and protocol is not None)
+    limits = load_limits()
+    usage = usage_totals_today(current_app.config["DATABASE"], limits["timezone"])
+    return render_template("protocol.html", protocol=protocol, source=source, error=error, reparsed=force and protocol is not None, usage=usage, budget=limits["daily_budget_usd"])
 
 
 @main_bp.get("/screen")

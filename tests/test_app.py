@@ -41,6 +41,57 @@ def test_all_initial_pages_include_synthetic_footer(tmp_path):
     assert b"maxlength=\"800\"" in screen_page.data
 
 
+def test_coordinator_dashboard_and_safety_pages_render_with_navigation(tmp_path):
+    app = create_app({"TESTING": True, "DATABASE": str(tmp_path / "test.db")})
+    client = app.test_client()
+
+    for path, marker in (("/coordinator", b"Needs your eyes"), ("/coordinator/email-drafts", b"Email drafts"), ("/coordinator/safety", b"Safety log"), ("/coordinator/protocol", b"Candidates")):
+        response = client.get(path)
+        assert response.status_code == 200
+        assert marker in response.data
+        assert b"Demo \xc2\xb7 synthetic data only" in response.data
+
+
+def test_coordinator_detail_and_reason_required_override(tmp_path):
+    import json
+
+    from eligibl.config import REPO_ROOT
+    from eligibl.db import create_candidate_screening, record_trace_step, save_candidate_message, save_criterion_answer
+
+    database = str(tmp_path / "coordinator.db")
+    app = create_app({"TESTING": True, "DATABASE": database})
+    protocol = json.loads((REPO_ROOT / "data" / "protocol.json").read_text(encoding="utf-8"))
+    create_candidate_screening(database, "dashboard-candidate", "Maya", protocol)
+    save_candidate_message(database, "dashboard-candidate", "user", "I am 32.")
+    save_criterion_answer(database, "dashboard-candidate", "C1", "satisfied", "I am 32", "Age stated")
+    record_trace_step(database, {
+        "run_id": "run-dashboard", "candidate_id": "dashboard-candidate", "agent": "candidate_screener",
+        "input_summary": "Candidate reported age.", "tool_calls": [{"name": "record_answer", "args": {"criterion_id": "C1"}}],
+        "output_summary": "Age evidence recorded.", "input_tokens": 12, "cached_input_tokens": 4, "output_tokens": 3,
+    })
+    client = app.test_client()
+
+    detail = client.get("/api/coordinator/candidates/dashboard-candidate")
+    assert detail.status_code == 200
+    assert detail.json["criteria"][0]["answer"]["evidence_quote"] == "I am 32"
+    assert detail.json["criteria_total"] == 7
+    assert detail.json["trace"][0]["tool_calls"][0]["name"] == "record_answer"
+
+    rejected = client.post(
+        "/api/coordinator/candidates/dashboard-candidate/actions",
+        json={"action": "override", "decision": "Not a match", "reason": ""},
+    )
+    assert rejected.status_code == 400
+    saved = client.post(
+        "/api/coordinator/candidates/dashboard-candidate/actions",
+        json={"action": "override", "decision": "Needs review", "reason": "Coordinator found conflicting source detail."},
+    )
+    assert saved.status_code == 200
+    assert saved.json["candidate"]["decision_label"] == "Needs review"
+    assert saved.json["candidate"]["actions"][0]["action"] == "override"
+    assert saved.json["candidate"]["actions"][0]["created_at"]
+
+
 def test_usage_today_endpoint_includes_budget_and_zeroed_usage(tmp_path):
     app = create_app({"TESTING": True, "DATABASE": str(tmp_path / "test.db")})
 

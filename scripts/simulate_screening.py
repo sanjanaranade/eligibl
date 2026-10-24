@@ -10,7 +10,7 @@ from unittest.mock import patch
 from eligibl import create_app
 from eligibl.agents import screener
 from eligibl.config import REPO_ROOT
-from eligibl.db import get_criterion_answers
+from eligibl.db import coordinator_detail, get_criterion_answers
 from eligibl.routes import main as main_routes
 
 
@@ -58,7 +58,8 @@ def run_simulation() -> dict:
 
         with patch.object(main_routes, "api_key_found", return_value=True), \
              patch.object(main_routes, "parse_protocol", return_value=protocol), \
-             patch.object(screener, "call_agent", side_effect=fake_call_agent):
+             patch.object(screener, "call_agent", side_effect=fake_call_agent), \
+             patch("eligibl.agents.verifier.call_agent", return_value=(json.dumps({"summary": "Synthetic persona answers reviewed.", "downgrades": []}), {})):
             client = app.test_client()
             start = client.post("/api/screen/start", json={"first_name": "Alex", "consent": True})
             candidate_id = start.json["candidate_id"]
@@ -87,11 +88,20 @@ def run_simulation() -> dict:
                 json={"message": "I am willing to follow the visits and instructions"},
             )
             answers = get_criterion_answers(app.config["DATABASE"], candidate_id)
+            review = coordinator_detail(app.config["DATABASE"], candidate_id)
 
         return {
             "mode": "synthetic persona; mocked model; no Portkey request",
             "transcript": transcript,
             "recorded_answers": answers,
+            "coordinator_review": {
+                "decision": review["decision_label"],
+                "verifier_summary": review["verifier_summary"],
+                "concerns": review["concerns"],
+                "tokens": review["total_tokens"],
+                "cost_usd": review["total_cost"],
+                "trace_steps": len(review["trace"]),
+            },
         }
 
 
