@@ -11,11 +11,11 @@ def test_homepage_has_two_entry_cards_and_synthetic_footer(tmp_path):
     assert b"I'm a coordinator" in response.data
     assert b"I'm here to be screened" in response.data
     assert b"Clinical research, made clearer." in response.data
-    assert b"Matching the right people to the right study. Participants answer clear screening questions, and coordinators review the evidence." in response.data
+    assert b"We revolutionize research by matching the right people to the right study. Participants answer clear screening questions, and coordinators review the evidence." in response.data
     assert b'class="welcome-brand" href="/"' in response.data
     logo = app.test_client().get("/static/img/eligibl-logo.svg")
     assert b"clinical research, made clearer" not in logo.data.lower()
-    assert b'viewBox="0 0 170 44"' in logo.data
+    assert b'viewBox="0 0 170 54"' in logo.data
     assert b'y="38"' in logo.data and b'y="64"' not in logo.data
     assert b"Demo \xc2\xb7 synthetic data only" in response.data
 
