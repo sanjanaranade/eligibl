@@ -4,23 +4,27 @@
   const dataNode = document.querySelector("#analytics-data");
   if (!dataNode) return;
   const stats = JSON.parse(dataNode.textContent);
-  const pink = "#ed75bd";
   const chartOptions = {
     responsive: true,
     plugins: { legend: { display: false } },
     scales: {
-      x: { beginAtZero: true, ticks: { color: "#cbbdcb", precision: 0 }, grid: { color: "#342936" } },
-      y: { ticks: { color: "#eadfea" }, grid: { display: false } },
+      x: { beginAtZero: true, ticks: { color: "#514B46", precision: 0, font: { size: 12, weight: 600 } }, grid: { color: "#E7E5E4" } },
+      y: { ticks: { color: "#514B46", font: { size: 12, weight: 600 } }, grid: { color: "#E7E5E4" } },
     },
   };
-  const renderChart = (canvasId, table, labels, values, label, horizontal = false) => {
+  const renderChart = (canvasId, table, labels, values, label, color, horizontal = false) => {
     const canvas = document.getElementById(canvasId);
     if (!canvas || !window.Chart) return;
     try {
+      const scales = {
+        x: { ...chartOptions.scales.x, ticks: { ...chartOptions.scales.x.ticks } },
+        y: { ...chartOptions.scales.y, ticks: { ...chartOptions.scales.y.ticks } },
+      };
+      if (horizontal) scales.y.ticks.font = { size: 10, weight: 600 };
       new window.Chart(canvas, {
         type: horizontal ? "bar" : "bar",
-        data: { labels, datasets: [{ label, data: values, backgroundColor: pink, borderRadius: 5 }] },
-        options: { ...chartOptions, indexAxis: horizontal ? "y" : "x" },
+        data: { labels, datasets: [{ label, data: values, backgroundColor: color, borderRadius: 5 }] },
+        options: { ...chartOptions, scales, indexAxis: horizontal ? "y" : "x" },
       });
       table.hidden = true;
     } catch (_error) {
@@ -33,10 +37,11 @@
     stats.funnel.map((row) => `${row.stage} · ${row.conversion_percent}%`),
     stats.funnel.map((row) => row.count),
     "Candidates",
+    "#0F5F5C",
   );
   const failureTable = document.querySelector("#failures-chart")?.nextElementSibling;
   if (stats.why_not_a_match.length) {
-    renderChart("failures-chart", failureTable, stats.why_not_a_match.map((row) => row.label), stats.why_not_a_match.map((row) => row.count), "Not satisfied", true);
+    renderChart("failures-chart", failureTable, stats.why_not_a_match.map((row) => row.label), stats.why_not_a_match.map((row) => row.count), "Not satisfied", "#B85C16", true);
   }
 
   const button = document.querySelector("#weekly-insights");
