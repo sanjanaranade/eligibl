@@ -59,7 +59,7 @@
       const verdictLabel = verdict === "met" ? "Satisfied" : verdict === "not_met" ? "Not satisfied" : "Unclear";
       const quote = answer?.evidence_quote ? `<blockquote><mark>${escapeHtml(answer.evidence_quote)}</mark></blockquote>` : '<p class="detail-placeholder">No quoted evidence recorded.</p>';
       const note = verdict === "unknown" ? `<p class="verifier-note">${escapeHtml(answer?.note || "Coordinator review needed")}</p>` : "";
-      const clinic = item.requires_clinic_check ? '<span class="clinic-badge">Checked at clinic visit</span>' : "";
+      const clinic = item.requires_clinic_check ? '<span class="clinic-badge">Self-report only · clinic confirmation needed</span>' : "";
       return `<article class="review-criterion"><div class="review-criterion-head"><span class="verdict-icon verdict-${verdict}">${icon}</span><div><strong>${escapeHtml(item.id)} · ${escapeHtml(verdictLabel)}</strong><p>${escapeHtml(item.requirement)}</p></div></div>${quote}${note}${clinic}</article>`;
     }).join("");
     const transcript = (candidate.transcript || []).map((message) => `<p class="transcript-message transcript-${escapeHtml(message.role)}"><b>${message.role === "user" ? escapeHtml(candidate.display_name) : "Eligibl"}</b><span>${escapeHtml(message.content)}</span></p>`).join("");

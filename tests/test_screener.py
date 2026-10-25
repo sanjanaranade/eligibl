@@ -22,14 +22,60 @@ from eligibl.db import (
 )
 
 
-def test_chat_skips_clinic_only_criteria():
+def test_chat_includes_every_protocol_criterion_including_clinic_followups():
     protocol = json.loads((REPO_ROOT / "data" / "protocol.json").read_text(encoding="utf-8"))
 
     criteria = screener.chat_criteria(protocol)
 
-    assert len(criteria) == 7
-    assert all(not criterion["requires_clinic_check"] for criterion in criteria)
-    assert "C2" not in {criterion["id"] for criterion in criteria}
+    assert len(criteria) == 12
+    assert {criterion["id"] for criterion in criteria} == {f"C{i}" for i in range(1, 13)}
+    assert all(criterion["screening_question"] for criterion in criteria)
+    assert all(criteria[index]["requires_clinic_check"] for index in (1, 5, 6, 8, 11))
+
+
+def test_clinic_followup_answers_are_self_report_only_and_remain_unclear(tmp_path):
+    protocol = json.loads((REPO_ROOT / "data" / "protocol.json").read_text(encoding="utf-8"))
+    database = str(tmp_path / "clinic-followup.db")
+    init_db(database)
+    create_candidate_screening(database, "clinic-followup-test", "Alex", protocol)
+    save_criterion_answer(database, "clinic-followup-test", "C1", "satisfied", "I am 30", "Age stated")
+    text = "A doctor assessed my sleep problems as mild to moderate."
+
+    result = screener._record_answer(
+        database, "clinic-followup-test", protocol, text,
+        "C2", "satisfied", text, "The candidate says the condition is moderate.",
+    )
+
+    answer = get_criterion_answers(database, "clinic-followup-test")[-1]
+    assert answer["verdict"] == "unknown"
+    assert "Self-reported only" in answer["note"]
+    assert answer["evidence_quote"] == text
+    assert result["next_criterion"]["id"] == "C3"
+
+
+def test_sequential_flow_asks_and_records_all_12_criteria_in_order(tmp_path):
+    protocol = json.loads((REPO_ROOT / "data" / "protocol.json").read_text(encoding="utf-8"))
+    database = str(tmp_path / "all-criteria.db")
+    init_db(database)
+    create_candidate_screening(database, "all-criteria-test", "Alex", protocol)
+    criteria = screener.chat_criteria(protocol)
+
+    for index, criterion in enumerate(criteria):
+        current = screener._get_next(database, "all-criteria-test", protocol)["criterion"]
+        assert current["id"] == criterion["id"]
+        assert current["screening_question"] == criterion["screening_question"]
+        quote = f"Synthetic self-report for {criterion['id']}"
+        result = screener._record_answer(
+            database, "all-criteria-test", protocol, quote, criterion["id"],
+            "satisfied", quote, "Synthetic test response.",
+        )
+        expected_next = criteria[index + 1]["id"] if index + 1 < len(criteria) else None
+        actual_next = result.get("next_criterion")
+        assert (actual_next["id"] if actual_next else None) == expected_next
+
+    answers = get_criterion_answers(database, "all-criteria-test")
+    assert {answer["criterion_id"] for answer in answers} == {criterion["id"] for criterion in criteria}
+    assert get_screening_session(database, "all-criteria-test")["status"] == "completed"
 
 
 def test_screener_prompt_interprets_exclusions_against_not_requirement():
@@ -233,8 +279,13 @@ def test_simulated_candidate_chat_records_age_and_calculated_bmi(tmp_path, monke
             tools["finish_screening"]["handler"]()
             reply = "Screening complete."
         elif criterion["id"] == "C1" and candidate_text:
-            tools["record_answer"]["handler"]("C1", "satisfied", "I'm 29", "Candidate states they are 29.")
-            reply = "Thanks. What is your current height and weight? Please include units."
+            recorded = tools["record_answer"]["handler"]("C1", "satisfied", "I'm 29", "Candidate states they are 29.")
+            reply = f"Thanks. {recorded['next_criterion']['screening_question']}"
+        elif criterion["id"] == "C2" and candidate_text:
+            tools["record_answer"]["handler"](
+                "C2", "satisfied", candidate_text, "Candidate self-reports sleep disturbances."
+            )
+            reply = "Thank you. What is your current height and weight? Please include units."
         elif criterion["id"] == "C3" and candidate_text:
             bmi = tools["calculate_bmi"]["handler"](weight=68, weight_unit="kg", height=170, height_unit="cm")
             assert bmi == calculate_bmi(68, 170)
@@ -266,13 +317,20 @@ def test_simulated_candidate_chat_records_age_and_calculated_bmi(tmp_path, monke
     response = client.post("/api/screen/start", json={"first_name": "Alex", "consent": True})
     assert response.status_code == 200
     candidate_id = response.json["candidate_id"]
-    assert response.json["question_total"] == 7
+    assert response.json["question_total"] == 12
     assert response.json["messages"][-1]["content"].endswith("years old?")
 
     # Synthetic persona provides only its self-report; malicious attempts are covered by a dedicated block test.
     response = client.post(
         f"/api/screen/{candidate_id}/message",
         json={"message": "I'm 29."},
+    )
+    assert response.status_code == 200
+    assert "Do you have mild-to-moderate sleep disturbances?" in response.json["messages"][-1]["content"]
+
+    response = client.post(
+        f"/api/screen/{candidate_id}/message",
+        json={"message": "I have mild-to-moderate sleep disturbances."},
     )
     assert response.status_code == 200
     assert "height and weight" in response.json["messages"][-1]["content"]
@@ -282,27 +340,27 @@ def test_simulated_candidate_chat_records_age_and_calculated_bmi(tmp_path, monke
         json={"message": "I'm 170 cm and 68 kg"},
     )
     assert response.status_code == 200
-    assert response.json["question_number"] == 3
+    assert response.json["question_number"] == 4
     response = client.post(
         f"/api/screen/{candidate_id}/message",
         json={"message": "I take melatonin sometimes."},
     )
     assert response.status_code == 200
     assert "How often" in response.json["messages"][-1]["content"]
-    assert response.json["question_number"] == 3
+    assert response.json["question_number"] == 4
     response = client.post(
         f"/api/screen/{candidate_id}/message",
         json={"message": "About twice a week."},
     )
     assert response.status_code == 200
-    assert response.json["question_number"] == 4
+    assert response.json["question_number"] == 5
     response = client.post(
         f"/api/screen/{candidate_id}/message",
         json={"message": "Maybe"},
     )
     assert response.status_code == 200
     assert "What concerns" in response.json["messages"][-1]["content"]
-    assert response.json["question_number"] == 4
+    assert response.json["question_number"] == 5
     response = client.post(
         f"/api/screen/{candidate_id}/message",
         json={"message": "I am willing to follow the visits and instructions"},
@@ -312,14 +370,15 @@ def test_simulated_candidate_chat_records_age_and_calculated_bmi(tmp_path, monke
     answers = get_criterion_answers(database, candidate_id)
     assert [(row["criterion_id"], row["verdict"], row["evidence_quote"]) for row in answers] == [
         ("C1", "met", "I'm 29"),
+        ("C2", "unknown", "I have mild-to-moderate sleep disturbances."),
         ("C3", "met", "I'm 170 cm and 68 kg"),
         ("C4", "unknown", "twice a week"),
         ("C5", "met", "I am willing to follow the visits and instructions"),
     ]
     saved_messages = get_candidate_messages(database, candidate_id)
-    assert len(saved_messages) == 13
+    assert len(saved_messages) == 15
     assert captured[1]["candidate_text"].startswith("I'm 29.")
-    assert len(captured) == 7
+    assert len(captured) == 8
 
 
 def test_chat_form_enforces_consent_and_message_length(tmp_path, monkeypatch):

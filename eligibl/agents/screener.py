@@ -59,14 +59,14 @@ Safety and evidence:
 - A recorded evidence_quote must be copied exactly from the latest candidate message; never invent or silently correct it.
 
 Tools and flow:
-- At chat start call get_next_criterion. Later, use the trusted app state and record_answer for the current criterion; its result supplies the next one, so do not call get_next_criterion again. If vague, ask a follow-up without recording. When all chat-checkable criteria are recorded, call finish_screening and thank the candidate neutrally. Clinic-check criteria are not chat questions.
+- At chat start call get_next_criterion. Later, use the trusted app state and record_answer for the current criterion; its result supplies the next one, so do not call get_next_criterion again. If vague, ask a follow-up without recording. Ask every criterion, including clinic-confirmation items. For those items, collect only the candidate's self-report and never present it as clinically verified; the application records it as unclear for coordinator/clinic follow-up. When all criteria are recorded, call finish_screening and thank the candidate neutrally.
 - Use calculate_bmi for supplied measurements, ask for missing units, and mark an exact range endpoint unclear if the protocol does not define inclusion. Record ordinary criterion uncertainty with verdict `unclear`; reserve flag_concern for a separate safety or integrity concern that warrants escalation, not merely an unanswered or borderline criterion.
 - Only registered tools can be used. Never claim a coordinator has reviewed the answers."""
 
 
 def chat_criteria(protocol: dict[str, Any]) -> list[dict[str, Any]]:
-    """Return protocol criteria the parser marked as chat-checkable."""
-    return [criterion for criterion in protocol["criteria"] if not criterion["requires_clinic_check"]]
+    """Return every protocol criterion to ask, including clinic-follow-up items."""
+    return list(protocol["criteria"])
 
 
 def _candidate_message_json(text: str) -> str:
@@ -99,7 +99,7 @@ def _tools_for_candidate(
     get_next = {
         "schema": {
             "type": "function", "name": "get_next_criterion",
-            "description": "Get this candidate's earliest chat-checkable criterion without a recorded answer.",
+            "description": "Get this candidate's earliest criterion without a recorded answer.",
             "parameters": {"type": "object", "properties": {}, "required": [], "additionalProperties": False},
         },
         "handler": lambda: _initial_question(database, candidate_id, protocol),
@@ -127,7 +127,7 @@ def _tools_for_candidate(
     finish = {
         "schema": {
             "type": "function", "name": "finish_screening",
-            "description": "Finish only when all chat-checkable criteria have a saved verdict.",
+            "description": "Finish only when all criteria have a saved verdict.",
             "parameters": {"type": "object", "properties": {}, "required": [], "additionalProperties": False},
         },
         "handler": lambda: _finish_if_done(database, candidate_id, protocol),
@@ -154,7 +154,7 @@ def _get_next(database: str, candidate_id: str, protocol: dict[str, Any]) -> dic
             # in every tool result and burns the candidate token budget.
             compact = {
                 key: criterion[key]
-                for key in ("id", "type", "requirement", "screening_question")
+                for key in ("id", "type", "requirement", "screening_question", "requires_clinic_check")
             }
             return {"criterion": compact, "progress": {"number": index + 1, "total": len(criteria)}}
     return {"criterion": None, "progress": {"number": len(criteria), "total": len(criteria)}}
@@ -190,6 +190,10 @@ def _record_answer(
         raise ValueError("evidence_quote must be copied word-for-word from the latest candidate message.")
     if verdict not in {"satisfied", "not_satisfied", "unclear"}:
         raise ValueError("Invalid per-criterion verdict.")
+    criterion = next(row for row in protocol["criteria"] if row["id"] == criterion_id)
+    if criterion["requires_clinic_check"]:
+        verdict = "unclear"
+        note = "Self-reported only; coordinator/clinic confirmation is required. " + note
     db.save_criterion_answer(database, candidate_id, criterion_id, verdict, evidence_quote, note[:1000])
     next_result = _get_next(database, candidate_id, protocol)
     result = {
@@ -293,7 +297,7 @@ def _build_model_messages(
     )
     variable: list[dict[str, str]] = []
     if start:
-        variable.append({"role": "user", "content": "Begin the screening now. Ask the first unanswered chat-checkable criterion."})
+        variable.append({"role": "user", "content": "Begin the screening now. Ask the first unanswered criterion."})
     else:
         next_state = _get_next(database, candidate_id, protocol)
         variable.append({

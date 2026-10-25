@@ -559,7 +559,7 @@ def coordinator_candidates(database: str | Path) -> list[dict[str, Any]]:
     for row in rows:
         item = dict(row)
         protocol = json.loads(item.pop("protocol_json") or "{}")
-        item["criteria_total"] = sum(not criterion.get("requires_clinic_check", False) for criterion in protocol.get("criteria", []))
+        item["criteria_total"] = len(protocol.get("criteria", []))
         flagged = bool(item["has_concern"] or item["injection_flag"])
         if flagged and not item["override_reason"]:
             item["decision_label"] = "Flagged"

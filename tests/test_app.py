@@ -13,10 +13,10 @@ def test_homepage_has_two_entry_cards_and_synthetic_footer(tmp_path):
     assert b"Matching the right people to the right study." in response.data
     assert b"Participants answer clear screening questions" in response.data
     assert b'class="welcome-brand" href="/"' in response.data
-    assert b"clinical research, made clearer" in response.data.lower()
     logo = app.test_client().get("/static/img/eligibl-logo.svg")
-    assert b"<title id=\"title\">eligibl</title>" in logo.data
-    assert b"CLINICAL RESEARCH, MADE CLEARER" not in logo.data
+    assert b"clinical research, made clearer" in logo.data.lower()
+    assert b'viewBox="0 0 170 70"' in logo.data
+    assert b'y="38"' in logo.data and b'y="64"' in logo.data
     assert b"Demo \xc2\xb7 synthetic data only" in response.data
 
 
@@ -99,7 +99,7 @@ def test_coordinator_detail_and_reason_required_override(tmp_path):
     detail = client.get("/api/coordinator/candidates/dashboard-candidate")
     assert detail.status_code == 200
     assert detail.json["criteria"][0]["answer"]["evidence_quote"] == "I am 32"
-    assert detail.json["criteria_total"] == 7
+    assert detail.json["criteria_total"] == 12
     assert detail.json["trace"][0]["tool_calls"][0]["name"] == "record_answer"
 
     rejected = client.post(
@@ -245,5 +245,5 @@ def test_protocol_page_renders_cached_checklist_without_an_api_call(tmp_path):
     assert response.status_code == 200
     assert b"NCT07497698" in response.data
     assert b"Age 18-65 years" in response.data
-    assert b"Checked at clinic visit" in response.data
+    assert b"Ask for self-report; confirm at clinic visit" in response.data
     assert b"Re-parse protocol" in response.data

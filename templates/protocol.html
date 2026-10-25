@@ -36,7 +36,7 @@
             <dt>Counts as satisfied</dt><dd>{{ criterion.satisfied_when }}</dd>
             <dt>Mark unclear when</dt><dd>{{ criterion.unclear_when }}</dd>
           </dl>
-          {% if criterion.requires_clinic_check %}<p class="clinic-badge">Checked at clinic visit</p>{% endif %}
+          {% if criterion.requires_clinic_check %}<p class="clinic-badge">Ask for self-report; confirm at clinic visit</p>{% endif %}
         </div>
       </article>
       {% endfor %}

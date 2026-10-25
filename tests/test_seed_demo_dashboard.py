@@ -18,8 +18,7 @@ def test_demo_seed_populates_finished_personas_once_without_model_usage(tmp_path
         "total": 24,
         "statuses": {
             "Flagged": 3,
-            "Likely eligible": 10,
-            "Needs review": 4,
+            "Needs review": 14,
             "Not a match": 7,
         },
     }

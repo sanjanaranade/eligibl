@@ -67,9 +67,13 @@ def _append_demo_chat(
         db.save_candidate_message(database, candidate_id, "user", statement)
         truth = fact.get("truth")
         verdict = truth if truth in {"satisfied", "not_satisfied", "unclear"} else "unclear"
+        note = f"Synthetic persona fact: {fact.get('fact', 'No additional note.')}"
+        if criterion["requires_clinic_check"]:
+            verdict = "unclear"
+            note = "Synthetic self-report only; coordinator/clinic confirmation is required. " + note
         db.save_criterion_answer(
             database, candidate_id, criterion["id"], verdict, statement,
-            f"Synthetic persona fact: {fact.get('fact', 'No additional note.')}",
+            note,
         )
         if index + 1 < len(criteria):
             db.save_candidate_message(

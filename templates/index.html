@@ -3,8 +3,7 @@
 {% block content %}
   <section class="welcome">
     <div class="welcome-hero-art" aria-hidden="true"><svg class="pathway-art" viewBox="0 0 520 220"><path d="M8 172C110 172 82 35 210 48s90 130 190 110 84-102 116-111"/></svg><span class="organic-blob blob-one"></span><span class="organic-blob blob-two"></span></div>
-    <a class="welcome-brand" href="{{ url_for('main.index') }}" aria-label="Eligibl home"><img src="{{ url_for('static', filename='img/eligibl-logo.svg') }}" alt="Eligibl"></a>
-    <p class="welcome-tagline">Clinical research, made clearer</p>
+    <a class="welcome-brand" href="{{ url_for('main.index') }}" aria-label="Eligibl home"><img src="{{ url_for('static', filename='img/eligibl-logo.svg', v='brand-2') }}" alt="Eligibl — Clinical research, made clearer"></a>
     <h1>Matching the right people to the right study.</h1>
     <p class="lede">Participants answer clear screening questions, and coordinators review the evidence.</p>
     {% if not has_api_key %}
