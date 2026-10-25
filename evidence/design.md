@@ -16,3 +16,9 @@ Fixed a live-state bug discovered during the smoke test: the safety suite mirror
 - The smoke-test server was stopped after verification, then the updated app was restarted at `http://127.0.0.1:5051` for the user preview.
 
 Fraunces and Inter are loaded from Google Fonts when online and fall back to Georgia and system sans-serif when offline. No external images or JavaScript packages were added for the design.
+
+## Home-page copy refinement
+
+The logo asset now contains only the wordmark; “Clinical research, made clearer” is set separately beneath it with deliberate spacing. The hero headline is “Matching the right people to the right study.” and its supporting description explains the participant/coordinator experience. This establishes a clear brand-line → headline → description hierarchy without crowding the logo. The homepage regression test checks the copy and standalone logo asset.
+
+- `.venv/bin/python -m pytest -q`: **117 passed**.
