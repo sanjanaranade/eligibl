@@ -495,6 +495,7 @@ def call_agent(
                     }
                     for tool_call in calls
                 )
+            terminal_tool_result = False
             for tool_call in calls:
                 tool_name = str(_value(tool_call, "name", ""))
                 raw_arguments = _value(tool_call, "arguments", "{}")
@@ -526,11 +527,20 @@ def call_agent(
                     tool_result = handler(**arguments)
                 except Exception as exc:
                     tool_result = {"error": "Tool execution failed", "type": type(exc).__name__}
+                if isinstance(tool_result, dict) and tool_result.get("_agent_turn_complete") is True:
+                    # Some trusted tools perform a deterministic terminal
+                    # transition. Do not spend another model request asking it
+                    # to narrate a result the application already knows.
+                    result_text = str(tool_result.get("_assistant_message", ""))
+                    terminal_tool_result = True
+                    continue
                 payload.append({
                     "type": "function_call_output",
                     "call_id": _value(tool_call, "call_id", ""),
                     "output": tool_result if isinstance(tool_result, str) else json.dumps(tool_result, ensure_ascii=False),
                 })
+            if terminal_tool_result:
+                break
             request["input"] = payload
 
         if response_schema is not None:

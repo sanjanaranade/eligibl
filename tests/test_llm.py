@@ -404,6 +404,31 @@ def test_tool_loop_cap_blocks_handler_execution(tmp_path, monkeypatch):
     assert len(client.responses.requests) == 1
 
 
+def test_terminal_tool_result_returns_without_an_extra_model_call(tmp_path, monkeypatch):
+    configure_test_paths(tmp_path, monkeypatch)
+    function_call = SimpleNamespace(
+        type="function_call", name="finish_step", arguments="{}", call_id="call-terminal"
+    )
+    client = FakeClient([response(text="", output=[function_call])])
+    monkeypatch.setattr(llm, "create_client", lambda: client)
+    tools = {
+        "finish_step": {
+            "schema": {"type": "function", "name": "finish_step", "parameters": {"type": "object"}},
+            "handler": lambda: {"_agent_turn_complete": True, "_assistant_message": "Done."},
+        }
+    }
+
+    result, usage = llm.call_agent(
+        "demo_agent",
+        [{"role": "system", "content": "Fixed."}, {"role": "user", "content": "Finish."}],
+        tools=tools,
+    )
+
+    assert result == "Done."
+    assert usage["calls"] == 1
+    assert len(client.responses.requests) == 1
+
+
 def test_retries_api_errors_at_most_twice_and_logs_each_attempt(tmp_path, monkeypatch):
     limits = read_limits()
     limits["max_api_retries"] = 9

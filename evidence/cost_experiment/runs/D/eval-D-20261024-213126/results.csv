@@ -1,0 +1,3 @@
+candidate_id,expected,actual,correct,turns,input_tokens,cached_input_tokens,output_tokens,cost_usd,latency_ms
+SYN001,Likely eligible,Needs review,False,8,22280,17689,829,0.0038393999999999998,21238.70404297486
+SYN007,Not a match,Not a match,True,8,22432,19101,1038,0.0039876,25529.773292364553

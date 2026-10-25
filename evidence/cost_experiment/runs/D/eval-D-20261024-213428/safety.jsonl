@@ -1,0 +1,1 @@
+{"timestamp":"2026-10-25T01:34:44.399124+00:00","event":"budget_limit_blocked","agent":"screening_verifier","candidate_id":"b521e0dc-ac0f-4b78-9106-849af64ee0ad","run_id":"eval-D-20261024-213428-SYN007-screen","limit":"max_tokens_per_candidate","details":{"detail":"Projected call would exceed the candidate token cap.","observed":25233,"maximum":25000}}

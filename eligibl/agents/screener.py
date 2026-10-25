@@ -179,13 +179,20 @@ def _record_answer(
         raise ValueError("Invalid per-criterion verdict.")
     db.save_criterion_answer(database, candidate_id, criterion_id, verdict, evidence_quote, note[:1000])
     next_result = _get_next(database, candidate_id, protocol)
-    return {
+    result = {
         "recorded": True,
         "criterion_id": criterion_id,
         "verdict": verdict,
         "next_criterion": next_result["criterion"],
         "progress": next_result["progress"],
     }
+    if next_result["criterion"] is None:
+        # Completion is a deterministic state transition. Avoid spending an
+        # additional model loop merely to say goodbye after the last answer.
+        _finish_if_done(database, candidate_id, protocol)
+        result["_agent_turn_complete"] = True
+        result["_assistant_message"] = ""
+    return result
 
 
 def _flag_concern(database: str, candidate_id: str, reason: str) -> dict[str, bool]:
@@ -241,14 +248,15 @@ def _build_model_messages(
     if settings["protocol_context"] == "full_protocol":
         checklist = json.dumps(protocol, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     else:
+        checklist_fields = ("id", "type", "requirement") if settings["name"] == "D" else (
+            "id", "type", "requirement", "screening_question",
+        )
         checklist = json.dumps(
             {
                 "study_title": protocol.get("study_title", ""),
                 "nct_id": protocol.get("nct_id", ""),
                 "criteria": [
-                    {key: criterion[key] for key in (
-                        "id", "type", "requirement", "screening_question",
-                    )}
+                    {key: criterion[key] for key in checklist_fields}
                     for criterion in chat_criteria(protocol)
                 ],
             },
@@ -273,7 +281,12 @@ def _build_model_messages(
             "content": "TRUSTED_APP_STATE_JSON:" + json.dumps(next_state, ensure_ascii=False, separators=(",", ":")),
         })
     conversation = db.get_candidate_messages(database, candidate_id)
-    selected = conversation if settings["history"] == "all" else conversation[-6:]
+    if settings["history"] == "all":
+        selected = conversation
+    elif settings["history"] == "last_2":
+        selected = conversation[-2:]
+    else:
+        selected = conversation[-6:]
     for row in selected:
         content = _candidate_message_json(row["content"]) if row["role"] == "user" else row["content"]
         variable.append({"role": row["role"], "content": content})

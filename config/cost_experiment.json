@@ -1,5 +1,5 @@
 {
-  "default_variant": "baseline",
+  "default_variant": "D",
   "max_experiment_cost_usd": 3.0,
   "sample_candidate_ids": [
     "SYN001",
@@ -43,6 +43,13 @@
       "running_answer_summary": true,
       "cache_static_first": true,
       "skip_verifier_on_not_match": true
+    },
+    "D": {
+      "protocol_context": "parsed_checklist",
+      "history": "last_2",
+      "running_answer_summary": true,
+      "cache_static_first": true,
+      "skip_verifier_on_not_match": false
     }
   }
 }

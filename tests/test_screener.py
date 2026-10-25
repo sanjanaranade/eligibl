@@ -49,6 +49,7 @@ def test_cost_variants_apply_protocol_history_summary_and_prefix_flags(tmp_path)
     baseline = screener._build_model_messages(database, "variant-test", protocol, start=False, variant="baseline")
     variant_a = screener._build_model_messages(database, "variant-test", protocol, start=False, variant="A")
     variant_b = screener._build_model_messages(database, "variant-test", protocol, start=False, variant="B")
+    variant_d = screener._build_model_messages(database, "variant-test", protocol, start=False, variant="D")
 
     assert "original_text" in baseline[0]["content"]
     assert '"requirement"' in variant_b[0]["content"]
@@ -61,6 +62,31 @@ def test_cost_variants_apply_protocol_history_summary_and_prefix_flags(tmp_path)
         [row for row in variant_b if row["role"] in {"assistant", "user"}]
     )
     assert len([row for row in variant_b if row["role"] in {"assistant", "user"}]) <= 8
+    assert any("Answer 3." in row["content"] for row in variant_d)
+    assert not any("Answer 0." in row["content"] for row in variant_d)
+    assert any(summary_marker in row["content"] for row in variant_d[1:])
+    assert '"screening_question"' not in variant_d[0]["content"]
+    trusted_state = next(row["content"] for row in variant_d if "TRUSTED_APP_STATE_JSON:" in row["content"])
+    assert '"screening_question"' in trusted_state
+
+
+def test_recording_last_chat_criterion_completes_deterministically(tmp_path):
+    protocol = json.loads((REPO_ROOT / "data" / "protocol.json").read_text(encoding="utf-8"))
+    database = str(tmp_path / "terminal-screening.db")
+    init_db(database)
+    create_candidate_screening(database, "terminal-test", "Alex", protocol)
+    criteria = screener.chat_criteria(protocol)
+    for criterion in criteria[:-1]:
+        save_criterion_answer(database, "terminal-test", criterion["id"], "satisfied", "Earlier evidence.", "Recorded.")
+
+    last = criteria[-1]
+    result = screener._record_answer(
+        database, "terminal-test", protocol, "No, none of those apply.",
+        last["id"], "satisfied", "none of those apply", "Candidate answered the final item.",
+    )
+
+    assert result["_agent_turn_complete"] is True
+    assert get_screening_session(database, "terminal-test")["status"] == "completed"
 
 
 def test_record_answer_requires_exact_quote_from_latest_candidate_message(tmp_path):

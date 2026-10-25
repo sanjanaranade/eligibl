@@ -287,7 +287,7 @@ def main() -> None:
     """Run the live evaluation and print its artifact location."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-root", type=Path, help="Optional artifact root (defaults to evidence/eval).")
-    parser.add_argument("--variant", choices=("baseline", "A", "B", "C"), help="Prompt/cost experiment variant.")
+    parser.add_argument("--variant", choices=("baseline", "A", "B", "C", "D"), help="Prompt/cost experiment variant.")
     parser.add_argument("--candidate-ids", nargs="+", help="Optional subset of synthetic persona IDs.")
     args = parser.parse_args()
     path = run_evaluation(output_root=args.output_root, variant=args.variant, candidate_ids=args.candidate_ids)
