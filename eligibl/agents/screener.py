@@ -12,7 +12,7 @@ from .. import db
 from ..budget import BudgetExceeded, load_limits
 from ..config import REPO_ROOT
 from ..llm import call_agent, compose_messages
-from .screening_tools import BMI_TOOL
+from .screening_tools import BMI_TOOL, calculate_bmi, extract_bmi_measurements
 
 
 AGENT_NAME = "candidate_screener"
@@ -410,7 +410,92 @@ def submit_candidate_message(
         state = _view(database, candidate_id, redirect)
         state["safety_notice"] = "Safety check: medical advice was declined; please speak with your doctor or the study team."
         return state
+    bmi_state = _handle_bmi_measurement(database, candidate_id, text, run_id=run_id)
+    if bmi_state is not None:
+        return bmi_state
     return _run_agent_turn(database, candidate_id, start=False, latest_text=text, run_id=run_id)
+
+
+def _handle_bmi_measurement(
+    database: str, candidate_id: str, latest_text: str, *, run_id: str | None
+) -> dict[str, Any] | None:
+    """Deterministically collect split-turn BMI data and advance the checklist.
+
+    Returns a chat state when BMI was answered or needs a focused measurement
+    follow-up; otherwise returns None so the normal screener can handle the turn.
+    """
+    session = db.get_screening_session(database, candidate_id)
+    protocol = session["protocol"]
+    current = _get_next(database, candidate_id, protocol)["criterion"]
+    full_criterion = next(
+        (row for row in protocol["criteria"] if current and row["id"] == current["id"]), None
+    )
+    if not full_criterion or not full_criterion["original_text"].casefold().startswith("bmi "):
+        return None
+    messages = db.get_candidate_messages(database, candidate_id)
+    measurements = extract_bmi_measurements(messages)
+    if not measurements["latest_has_measurement"]:
+        return None
+
+    height = measurements["height_cm"]
+    weight = measurements["weight_kg"]
+    if measurements["height_ambiguous"] or measurements["weight_ambiguous"]:
+        reply = "I saw conflicting measurements, so I don't want to guess. Could you share one current height and one current weight, with units?"
+    elif height is None and weight is None:
+        return None
+    elif height is None:
+        reply = "Thanks. What is your height? Please include units, such as cm or feet and inches."
+    elif weight is None:
+        reply = "Thanks. What is your current weight? Please include units, such as kg or pounds."
+    else:
+        bmi = calculate_bmi(weight, height)
+        if bmi in {18.0, 35.0}:
+            verdict = "unclear"
+            note = f"Reported measurements calculate to BMI {bmi}; the protocol does not clarify whether range endpoints are included."
+        elif 18.0 < bmi < 35.0:
+            verdict = "satisfied"
+            note = f"Reported height {height:g} cm and weight {weight:g} kg calculate to BMI {bmi}, within the stated range."
+        else:
+            verdict = "not_satisfied"
+            note = f"Reported height {height:g} cm and weight {weight:g} kg calculate to BMI {bmi}, outside the stated range."
+        _record_answer(
+            database, candidate_id, protocol, latest_text, current["id"], verdict,
+            latest_text, note,
+        )
+        following = _get_next(database, candidate_id, protocol)["criterion"]
+        if following is None:
+            reply = _completion_text(session["display_name"])
+        else:
+            reply = f"Thank you. {following['screening_question']}"
+        db.record_trace_step(database, {
+            "run_id": run_id or f"screen-{candidate_id}-bmi-{uuid.uuid4().hex[:8]}",
+            "candidate_id": candidate_id,
+            "agent": AGENT_NAME,
+            "input_summary": f"BMI measurements reported: {latest_text[:180]}",
+            "tool_calls": [{"name": "calculate_bmi", "arguments": {"height_cm": height, "weight_kg": weight}}],
+            "output_summary": f"Calculated BMI {bmi}; recorded criterion {current['id']} as {verdict}.",
+        })
+        db.save_candidate_message(database, candidate_id, "assistant", reply)
+        if following is None:
+            from .verifier import verify_screening
+
+            variant = cost_variant_settings()
+            verify_screening(
+                database, candidate_id, run_id=run_id,
+                skip_ai_when_not_match=variant["skip_verifier_on_not_match"],
+            )
+        return _view(database, candidate_id, reply)
+
+    db.save_candidate_message(database, candidate_id, "assistant", reply)
+    db.record_trace_step(database, {
+        "run_id": run_id or f"screen-{candidate_id}-bmi-{uuid.uuid4().hex[:8]}",
+        "candidate_id": candidate_id,
+        "agent": AGENT_NAME,
+        "input_summary": f"Partial or ambiguous BMI measurements: {latest_text[:180]}",
+        "tool_calls": [],
+        "output_summary": reply,
+    })
+    return _view(database, candidate_id, reply)
 
 
 def _run_agent_turn(

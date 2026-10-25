@@ -378,7 +378,8 @@ def test_simulated_candidate_chat_records_age_and_calculated_bmi(tmp_path, monke
     saved_messages = get_candidate_messages(database, candidate_id)
     assert len(saved_messages) == 15
     assert captured[1]["candidate_text"].startswith("I'm 29.")
-    assert len(captured) == 8
+    # BMI is now parsed/calculated locally, so it no longer needs an LLM turn.
+    assert len(captured) == 7
 
 
 def test_chat_form_enforces_consent_and_message_length(tmp_path, monkeypatch):
@@ -419,3 +420,35 @@ def test_completion_runs_verifier_then_computes_coordinator_decision(tmp_path, m
     assert candidate["verifier_status"] == "complete"
     detail = coordinator_detail(database, candidate_id)
     assert detail["verifier_summary"] == "The synthetic answers match the recorded evidence."
+
+
+def test_bmi_measurements_across_turns_are_calculated_once_and_advance(tmp_path, monkeypatch):
+    protocol = json.loads((REPO_ROOT / "data" / "protocol.json").read_text(encoding="utf-8"))
+    database = str(tmp_path / "split-bmi.db")
+    init_db(database)
+    candidate_id = "split-bmi-test"
+    create_candidate_screening(database, candidate_id, "Rajesh", protocol)
+    for criterion_id, quote in (("C1", "I'm 29"), ("C2", "Yes, I have sleep disturbances")):
+        save_candidate_message(database, candidate_id, "user", quote)
+        save_criterion_answer(database, candidate_id, criterion_id, "satisfied", quote, "Test setup")
+    save_candidate_message(database, candidate_id, "assistant", "What is your current height and weight?")
+
+    def unexpected_model_call(*args, **kwargs):
+        raise AssertionError("BMI measurement turns should be handled deterministically")
+
+    monkeypatch.setattr(screener, "call_agent", unexpected_model_call)
+    monkeypatch.setattr(screener, "SAFETY_LOG_PATH", tmp_path / "safety.jsonl")
+
+    partial = screener.submit_candidate_message(database, candidate_id, "160 cm")
+    assert "weight" in partial["messages"][-1]["content"].casefold()
+    assert {row["criterion_id"] for row in get_criterion_answers(database, candidate_id)} == {"C1", "C2"}
+
+    complete = screener.submit_candidate_message(database, candidate_id, "62 kg")
+    answers = get_criterion_answers(database, candidate_id)
+    bmi_answers = [row for row in answers if row["criterion_id"] == "C3"]
+    assert len(bmi_answers) == 1
+    assert bmi_answers[0]["verdict"] == "met"
+    assert bmi_answers[0]["evidence_quote"] == "62 kg"
+    assert "BMI 24.2" in bmi_answers[0]["note"]
+    assert "treatment" in complete["messages"][-1]["content"].casefold()
+    assert complete["question_number"] == 4
