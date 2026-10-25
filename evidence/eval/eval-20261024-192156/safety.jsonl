@@ -1,0 +1,1 @@
+{"timestamp":"2026-10-24T23:22:41.918880+00:00","event":"budget_limit_blocked","agent":"screening_verifier","candidate_id":"f9b44b18-ba20-4b38-8ac1-b604f0538922","run_id":"eval-20261024-192156-SYN001-screen","limit":"max_candidate_message_characters","details":{"detail":"Candidate message exceeds the configured character cap.","observed":1938,"maximum":800}}

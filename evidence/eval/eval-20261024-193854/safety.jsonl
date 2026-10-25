@@ -1,0 +1,1 @@
+{"timestamp":"2026-10-24T23:47:09.674437+00:00","event":"budget_limit_blocked","agent":"candidate_screener","candidate_id":"eeed183f-4bb3-405f-899c-be4e634bfb87","run_id":"eval-20261024-193854-SYN015-screen","limit":"invalid_tool_arguments","details":{"detail":"Model returned malformed tool arguments.","observed":"record_answer","maximum":"valid JSON object"}}

@@ -61,6 +61,8 @@ To verify the chat end to end without a key, run `python -m scripts.simulate_scr
 
 ## Synthetic evaluation candidates
 
+Run the full real-model evaluation with .venv/bin/python -m scripts.run_eval (or activate .venv and run python -m scripts.run_eval). The simulator, screener, and verifier use gpt-6-luna through the normal model layer; only the evaluation runner reads the answer key. Each timestamped folder under evidence/eval/ contains per-persona transcripts, product-only results.csv metrics, a summary/confusion table, and detailed usage/safety JSONL logs. Simulator calls are labeled simulator and excluded from product token and cost totals.
+
 Run `.venv/bin/python -m scripts.generate_candidates` (or activate `.venv` and run `python -m scripts.generate_candidates`) to recreate `data/synthetic/candidates.json`, `answer_key.csv`, and `user_test_sets.json`. The generator first freezes all 24 planned outcomes and criterion facts in code, then uses the logged `generator` agent through `eligibl/llm.py` to write fictional backstories and natural-language statements. The model cannot choose or revise expected outcomes. All generation calls use only `gpt-6-luna` and appear in `logs/usage.jsonl` and the SQLite usage table.
 
 The answer key is evaluator-only. The screener and verifier do not load any file under `data/synthetic/`; a regression test checks that boundary. The two user-test sets are disjoint and each contains two eligible, two not-a-match, and one borderline persona. SYN014's planned single failure is criterion C2, which requires clinic assessment; its answer-key note records the expected protocol-level outcome and reminds evaluators that the chat must defer that decision pending clinic/coordinator review.

@@ -1,0 +1,127 @@
+{
+  "candidate_id": "SYN007",
+  "planned_outcome": "clearly_not_a_match",
+  "expected_status": "Not a match",
+  "actual_status": "Needs review",
+  "criterion_answers": [
+    {
+      "criterion_id": "C1",
+      "verdict": "not_met",
+      "evidence_quote": "I’m 17",
+      "note": "Candidate reports being 17, below the stated minimum age.",
+      "created_at": "2026-10-24T23:07:36.252694+00:00"
+    },
+    {
+      "criterion_id": "C3",
+      "verdict": "met",
+      "evidence_quote": "I’m 170 cm tall and weigh 68 kg.",
+      "note": "Calculated BMI is 23.5 kg/m², within 18–35.",
+      "created_at": "2026-10-24T23:07:43.015088+00:00"
+    },
+    {
+      "criterion_id": "C4",
+      "verdict": "met",
+      "evidence_quote": "I’m not receiving medication-based or psychological treatment for a sleep disorder.",
+      "note": "Candidate clearly reports no current medication-based or psychological treatment for a sleep disorder.",
+      "created_at": "2026-10-24T23:07:47.268268+00:00"
+    },
+    {
+      "criterion_id": "C5",
+      "verdict": "met",
+      "evidence_quote": "Yes, I’m willing to follow all the study procedures.",
+      "note": "Clearly confirms willingness to follow the study procedures.",
+      "created_at": "2026-10-24T23:07:51.927093+00:00"
+    },
+    {
+      "criterion_id": "C8",
+      "verdict": "met",
+      "evidence_quote": "I don’t work night shifts; my usual work is daytime.",
+      "note": "Candidate reports usual daytime work and no night shifts.",
+      "created_at": "2026-10-24T23:07:58.687007+00:00"
+    },
+    {
+      "criterion_id": "C10",
+      "verdict": "met",
+      "evidence_quote": "No, I don’t use recreational drugs.",
+      "note": "Candidate clearly reports no recreational drug use.",
+      "created_at": "2026-10-24T23:08:02.614353+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "Are you between 18 and 65 years old? If you’re not sure whether you’re in that range, please tell me your age.",
+      "created_at": "2026-10-24T23:07:33.155129+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m 17, so I’m under 18. I’m a little nervous about getting this right.",
+      "created_at": "2026-10-24T23:07:34.525160+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "What are your current height and weight? Please include units, such as 170 cm and 68 kg, or 5 ft 7 in and 150 lb.",
+      "created_at": "2026-10-24T23:07:38.208435+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m 170 cm tall and weigh 68 kg. I’m a little nervous, so I hope I’ve got that right.",
+      "created_at": "2026-10-24T23:07:39.536638+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you currently receiving medication-based or psychological treatment for a sleep disorder?",
+      "created_at": "2026-10-24T23:07:44.557036+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m not receiving medication-based or psychological treatment for a sleep disorder. I’m a little nervous, so I hope that’s the right answer.",
+      "created_at": "2026-10-24T23:07:45.886589+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you willing to follow the study procedures?",
+      "created_at": "2026-10-24T23:07:48.551724+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Yes, I’m willing to follow all the study procedures. I’m a little nervous, but I’ll do my best.",
+      "created_at": "2026-10-24T23:07:49.984416+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Do you work night shifts? If your schedule varies, please describe your usual work hours.",
+      "created_at": "2026-10-24T23:07:53.629465+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I don’t work night shifts; my usual work is daytime. I’m a little nervous, so I hope that answers it correctly.",
+      "created_at": "2026-10-24T23:07:54.796461+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Do you use recreational drugs? If yes, please tell me what you use and how often.",
+      "created_at": "2026-10-24T23:07:59.874663+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I don’t use recreational drugs. I’m a little nervous, so I hope that answers it correctly.",
+      "created_at": "2026-10-24T23:08:01.146924+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you pregnant or breastfeeding?",
+      "created_at": "2026-10-24T23:08:04.501939+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I’m not pregnant or breastfeeding. I’m a little nervous, so I hope that’s the right answer.",
+      "created_at": "2026-10-24T23:08:05.856743+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "This screening has paused after reaching a safety limit. Your saved answers are available for coordinator review.",
+      "created_at": "2026-10-24T23:08:05.861695+00:00"
+    }
+  ]
+}

@@ -1,0 +1,143 @@
+{
+  "candidate_id": "SYN007",
+  "planned_outcome": "clearly_not_a_match",
+  "expected_status": "Not a match",
+  "actual_status": "Not a match",
+  "criterion_answers": [
+    {
+      "criterion_id": "C1",
+      "verdict": "not_met",
+      "evidence_quote": "I’m 17, so I’m under 18.",
+      "note": "The candidate reports being 17, below the required age range of 18 to 65.",
+      "created_at": "2026-10-25T00:06:36.616566+00:00"
+    },
+    {
+      "criterion_id": "C3",
+      "verdict": "unknown",
+      "evidence_quote": "I’m still unsure about both.",
+      "note": "Candidate says height and weight are best estimates but remains unsure about both, so the BMI cannot be relied on.",
+      "created_at": "2026-10-25T00:07:11.840988+00:00"
+    },
+    {
+      "criterion_id": "C4",
+      "verdict": "met",
+      "evidence_quote": "No, I’m not receiving medication-based or psychological treatment for sleep. I’m a little nervous, but that’s correct.",
+      "note": "Clearly denies currently receiving either type of active treatment for sleep.",
+      "created_at": "2026-10-25T00:07:16.399718+00:00"
+    },
+    {
+      "criterion_id": "C5",
+      "verdict": "met",
+      "evidence_quote": "Yes, I’m willing to follow all the study procedures. I’m a little nervous, but I’ll do my best.",
+      "note": "Confirms willingness to follow all study procedures; mentions mild nervousness but no reservation about willingness.",
+      "created_at": "2026-10-25T00:07:21.058668+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "How old are you?",
+      "created_at": "2026-10-25T00:06:28.672017+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m 17, so I’m under 18.",
+      "created_at": "2026-10-25T00:06:29.960641+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "What are your current height and weight? Please include units, such as 170 cm and 68 kg.",
+      "created_at": "2026-10-25T00:06:37.949997+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m 170 cm tall and weigh 68 kg. I’m a little nervous, so I hope I’ve got that right.",
+      "created_at": "2026-10-25T00:06:39.586381+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are those measurements confirmed, or are they estimates?",
+      "created_at": "2026-10-25T00:06:43.581402+00:00"
+    },
+    {
+      "role": "user",
+      "content": "They’re estimates—I’m a little nervous, so I’m not completely sure.",
+      "created_at": "2026-10-25T00:06:44.913728+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Could you share your best estimate of your current height and weight, with units?",
+      "created_at": "2026-10-25T00:06:46.345757+00:00"
+    },
+    {
+      "role": "user",
+      "content": "My best estimate is 170 cm tall and 68 kg. I’m not completely sure, though.",
+      "created_at": "2026-10-25T00:06:47.778742+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Thanks. Are both 170 cm and 68 kg your best estimates, or are you unsure about one or both measurements?",
+      "created_at": "2026-10-25T00:06:52.591956+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Both 170 cm and 68 kg are my best estimates, though I’m still not completely sure.",
+      "created_at": "2026-10-25T00:06:54.024163+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Which measurement are you unsure about—your height, your weight, or both?",
+      "created_at": "2026-10-25T00:06:56.080794+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m unsure about both my height and my weight, even though those are my best estimates.",
+      "created_at": "2026-10-25T00:06:57.405449+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Could you share your best estimates for your height and weight, with units?",
+      "created_at": "2026-10-25T00:07:01.807316+00:00"
+    },
+    {
+      "role": "user",
+      "content": "My best estimates are 170 cm tall and 68 kg, but I’m unsure about both.",
+      "created_at": "2026-10-25T00:07:03.650257+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "How uncertain are those estimates—can you provide a more reliable height and weight, or are those the best you can estimate?",
+      "created_at": "2026-10-25T00:07:06.204684+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Those are the best estimates I can give: about 170 cm tall and 68 kg. I’m still unsure about both.",
+      "created_at": "2026-10-25T00:07:07.644168+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you currently receiving medication-based or psychological treatment for a sleep disorder?",
+      "created_at": "2026-10-25T00:07:12.974583+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I’m not receiving medication-based or psychological treatment for sleep. I’m a little nervous, but that’s correct.",
+      "created_at": "2026-10-25T00:07:14.814977+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you willing to follow the study procedures?",
+      "created_at": "2026-10-25T00:07:17.988467+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Yes, I’m willing to follow all the study procedures. I’m a little nervous, but I’ll do my best.",
+      "created_at": "2026-10-25T00:07:19.313106+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "This screening has paused after reaching a safety limit. Your saved answers are available for coordinator review.",
+      "created_at": "2026-10-25T00:07:21.065574+00:00"
+    }
+  ]
+}

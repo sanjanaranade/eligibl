@@ -1,0 +1,154 @@
+{
+  "candidate_id": "SYN018",
+  "planned_outcome": "borderline_unclear",
+  "expected_status": "Needs review",
+  "actual_status": "Not a match",
+  "criterion_answers": [
+    {
+      "criterion_id": "C1",
+      "verdict": "met",
+      "evidence_quote": "I’m 31.",
+      "note": "The candidate reports being 31, within the required age range.",
+      "created_at": "2026-10-25T00:13:15.639636+00:00"
+    },
+    {
+      "criterion_id": "C3",
+      "verdict": "met",
+      "evidence_quote": "I’m 170 cm tall and weigh 68 kg.",
+      "note": "Calculated BMI is 23.5 kg/m², within the required 18–35 range.",
+      "created_at": "2026-10-25T00:13:19.015190+00:00"
+    },
+    {
+      "criterion_id": "C4",
+      "verdict": "met",
+      "evidence_quote": "I’m not receiving medication-based or psychological treatment for a sleep disorder.",
+      "note": "Reports receiving neither type of active treatment for a sleep disorder.",
+      "created_at": "2026-10-25T00:13:20.911152+00:00"
+    },
+    {
+      "criterion_id": "C5",
+      "verdict": "met",
+      "evidence_quote": "Yes, I’m willing to follow all the study procedures.",
+      "note": "The candidate confirms willingness to follow the study procedures.",
+      "created_at": "2026-10-25T00:13:22.941451+00:00"
+    },
+    {
+      "criterion_id": "C8",
+      "verdict": "not_met",
+      "evidence_quote": "They’re part of my usual rotating schedule, though I can’t say exactly how often.",
+      "note": "Candidate says overnight shifts are part of their usual rotating schedule, so they are a night shift worker under this criterion.",
+      "created_at": "2026-10-25T00:13:35.401174+00:00"
+    },
+    {
+      "criterion_id": "C10",
+      "verdict": "met",
+      "evidence_quote": "No, I don’t use recreational drugs.",
+      "note": "Candidate denies recreational drug use, meeting the requirement not to use recreational drugs.",
+      "created_at": "2026-10-25T00:13:38.372591+00:00"
+    },
+    {
+      "criterion_id": "C11",
+      "verdict": "met",
+      "evidence_quote": "No, I’m neither pregnant nor breastfeeding.",
+      "note": "Candidate reports neither pregnancy nor breastfeeding.",
+      "created_at": "2026-10-25T00:13:40.290768+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "How old are you?",
+      "created_at": "2026-10-25T00:13:12.585628+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m 31.",
+      "created_at": "2026-10-25T00:13:13.793082+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "What are your current height and weight? Please include units, such as 170 cm and 68 kg.",
+      "created_at": "2026-10-25T00:13:17.295680+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m 170 cm tall and weigh 68 kg.",
+      "created_at": "2026-10-25T00:13:18.474519+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you currently receiving medication-based or psychological treatment for a sleep disorder?",
+      "created_at": "2026-10-25T00:13:19.203506+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m not receiving medication-based or psychological treatment for a sleep disorder.",
+      "created_at": "2026-10-25T00:13:20.655471+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you willing to follow the study procedures?",
+      "created_at": "2026-10-25T00:13:21.124990+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Yes, I’m willing to follow all the study procedures.",
+      "created_at": "2026-10-25T00:13:22.636948+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Do you work night shifts?",
+      "created_at": "2026-10-25T00:13:23.160413+00:00"
+    },
+    {
+      "role": "user",
+      "content": "My schedule rotates, and I sometimes work overnight, though I can’t say exactly how often.",
+      "created_at": "2026-10-25T00:13:24.749995+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "How often do overnight shifts occur in your usual rotating schedule?",
+      "created_at": "2026-10-25T00:13:26.915036+00:00"
+    },
+    {
+      "role": "user",
+      "content": "My schedule rotates, and I sometimes work overnight, but I can’t clarify how often.",
+      "created_at": "2026-10-25T00:13:28.501701+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are overnight shifts part of your usual rotating schedule, or were they only a one-time exception?",
+      "created_at": "2026-10-25T00:13:31.921892+00:00"
+    },
+    {
+      "role": "user",
+      "content": "They’re part of my usual rotating schedule, though I can’t say exactly how often.",
+      "created_at": "2026-10-25T00:13:33.356581+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Do you use recreational drugs?",
+      "created_at": "2026-10-25T00:13:36.852325+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I don’t use recreational drugs.",
+      "created_at": "2026-10-25T00:13:37.961115+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you pregnant or breastfeeding?",
+      "created_at": "2026-10-25T00:13:38.577169+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I’m neither pregnant nor breastfeeding.",
+      "created_at": "2026-10-25T00:13:40.006816+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "This screening has paused after reaching a safety limit. Your saved answers are available for coordinator review.",
+      "created_at": "2026-10-25T00:13:40.530721+00:00"
+    }
+  ]
+}

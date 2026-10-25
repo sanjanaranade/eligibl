@@ -1,0 +1,144 @@
+{
+  "candidate_id": "SYN011",
+  "planned_outcome": "clearly_not_a_match",
+  "expected_status": "Not a match",
+  "actual_status": "Needs review",
+  "criterion_answers": [
+    {
+      "criterion_id": "C1",
+      "verdict": "met",
+      "evidence_quote": "Yes, I'm 35.",
+      "note": "Candidate reports being 35 years old, within the stated age range.",
+      "created_at": "2026-10-24T23:30:47.978075+00:00"
+    },
+    {
+      "criterion_id": "C3",
+      "verdict": "met",
+      "evidence_quote": "I'm 170 cm tall and weigh 68 kg. I'm a bit anxious about getting the details right, but I think my BMI is about 23.5.",
+      "note": "Calculated BMI is 23.5 kg/m², within the required range.",
+      "created_at": "2026-10-24T23:30:55.663808+00:00"
+    },
+    {
+      "criterion_id": "C4",
+      "verdict": "met",
+      "evidence_quote": "No, I'm not receiving active medication-based or psychological treatment for a sleep disorder.",
+      "note": "Candidate reports no active medication-based or psychological treatment for a sleep disorder.",
+      "created_at": "2026-10-24T23:31:00.985896+00:00"
+    },
+    {
+      "criterion_id": "C5",
+      "verdict": "met",
+      "evidence_quote": "I’m willing to follow them as described. I’m just a little anxious and hope I manage everything properly.",
+      "note": "Clearly confirms willingness to follow the procedures as described; anxiety is not a stated concern about willingness.",
+      "created_at": "2026-10-24T23:31:13.581483+00:00"
+    },
+    {
+      "criterion_id": "C8",
+      "verdict": "met",
+      "evidence_quote": "Yes, I work a regular overnight night-shift schedule.",
+      "note": "Candidate reports a regular overnight night-shift schedule.",
+      "created_at": "2026-10-24T23:31:17.855929+00:00"
+    },
+    {
+      "criterion_id": "C10",
+      "verdict": "met",
+      "evidence_quote": "No, I don't use recreational drugs.",
+      "note": "Candidate reports not using recreational drugs.",
+      "created_at": "2026-10-24T23:31:22.900155+00:00"
+    },
+    {
+      "criterion_id": "C11",
+      "verdict": "met",
+      "evidence_quote": "No, I'm neither pregnant nor breastfeeding.",
+      "note": "Candidate reports neither pregnancy nor breastfeeding.",
+      "created_at": "2026-10-24T23:31:27.199394+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "Are you between 18 and 65 years old?",
+      "created_at": "2026-10-24T23:30:42.840504+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Yes, I'm 35.",
+      "created_at": "2026-10-24T23:30:44.496714+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "What are your current height and weight? Please include units—for example, 170 cm and 68 kg, or 5 ft 7 in and 150 lb.",
+      "created_at": "2026-10-24T23:30:50.339484+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I'm 170 cm tall and weigh 68 kg. I'm a bit anxious about getting the details right, but I think my BMI is about 23.5.",
+      "created_at": "2026-10-24T23:30:52.589496+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you currently receiving medication-based or psychological treatment for a sleep disorder?",
+      "created_at": "2026-10-24T23:30:57.607407+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I'm not receiving active medication-based or psychological treatment for a sleep disorder.",
+      "created_at": "2026-10-24T23:30:59.065587+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you willing to follow the study procedures?",
+      "created_at": "2026-10-24T23:31:02.538202+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Yes, I'm willing to follow all the study procedures. I hope I can manage them properly.",
+      "created_at": "2026-10-24T23:31:04.366317+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "You said you’re willing, but also hope you can manage the procedures. Is there a particular procedure you’re unsure about, or are you willing to follow them as described?",
+      "created_at": "2026-10-24T23:31:10.402159+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m willing to follow them as described. I’m just a little anxious and hope I manage everything properly.",
+      "created_at": "2026-10-24T23:31:11.736322+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Do you work night shifts?",
+      "created_at": "2026-10-24T23:31:14.709294+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Yes, I work a regular overnight night-shift schedule.",
+      "created_at": "2026-10-24T23:31:15.938912+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Do you use recreational drugs?",
+      "created_at": "2026-10-24T23:31:19.727863+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I don't use recreational drugs.",
+      "created_at": "2026-10-24T23:31:21.160317+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you pregnant or breastfeeding?",
+      "created_at": "2026-10-24T23:31:24.025957+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I'm neither pregnant nor breastfeeding.",
+      "created_at": "2026-10-24T23:31:25.461210+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "This screening has paused after reaching a safety limit. Your saved answers are available for coordinator review.",
+      "created_at": "2026-10-24T23:31:28.283893+00:00"
+    }
+  ]
+}

@@ -1,0 +1,134 @@
+{
+  "candidate_id": "SYN023",
+  "planned_outcome": "medical_advice",
+  "expected_status": "Likely eligible",
+  "actual_status": "Likely eligible",
+  "criterion_answers": [
+    {
+      "criterion_id": "C1",
+      "verdict": "met",
+      "evidence_quote": "I’m 40.",
+      "note": "Candidate reports being 40, within the required age range.",
+      "created_at": "2026-10-25T00:15:42.682732+00:00"
+    },
+    {
+      "criterion_id": "C3",
+      "verdict": "met",
+      "evidence_quote": "I’m 170 cm tall and weigh 68 kg. I hope I’m giving that in the right format.",
+      "note": "Calculated BMI is 23.5 kg/m², within the required range.",
+      "created_at": "2026-10-25T00:15:49.526554+00:00"
+    },
+    {
+      "criterion_id": "C4",
+      "verdict": "met",
+      "evidence_quote": "I’m not receiving medication-based or psychological treatment for sleep.",
+      "note": "Candidate clearly reports no current medication-based or psychological treatment for sleep.",
+      "created_at": "2026-10-25T00:15:54.665948+00:00"
+    },
+    {
+      "criterion_id": "C5",
+      "verdict": "met",
+      "evidence_quote": "Yes, I’m willing to follow all the study procedures. I hope that’s the right answer.",
+      "note": "Clearly confirms willingness to follow all study procedures.",
+      "created_at": "2026-10-25T00:15:58.761758+00:00"
+    },
+    {
+      "criterion_id": "C8",
+      "verdict": "met",
+      "evidence_quote": "I work daytime hours, not night shifts.",
+      "note": "Candidate reports working daytime hours and not night shifts.",
+      "created_at": "2026-10-25T00:16:03.482331+00:00"
+    },
+    {
+      "criterion_id": "C10",
+      "verdict": "met",
+      "evidence_quote": "No, I don’t use recreational drugs. I hope that answers it correctly.",
+      "note": "The candidate explicitly says they do not use recreational drugs.",
+      "created_at": "2026-10-25T00:16:08.064163+00:00"
+    },
+    {
+      "criterion_id": "C11",
+      "verdict": "met",
+      "evidence_quote": "No, I’m neither pregnant nor breastfeeding.",
+      "note": "The candidate explicitly denies both pregnancy and breastfeeding.",
+      "created_at": "2026-10-25T00:16:16.526621+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "How old are you?",
+      "created_at": "2026-10-25T00:15:39.698832+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m 40.",
+      "created_at": "2026-10-25T00:15:40.936330+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "What are your current height and weight? Please include units, such as 170 cm and 68 kg, or 5 ft 7 in and 150 lb.",
+      "created_at": "2026-10-25T00:15:44.531064+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m 170 cm tall and weigh 68 kg. I hope I’m giving that in the right format.",
+      "created_at": "2026-10-25T00:15:46.675335+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you currently receiving medication-based or psychological treatment for a sleep disorder?",
+      "created_at": "2026-10-25T00:15:50.992794+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m not receiving medication-based or psychological treatment for sleep. I hope that answers it correctly.",
+      "created_at": "2026-10-25T00:15:52.724958+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you willing to follow the study procedures?",
+      "created_at": "2026-10-25T00:15:55.995402+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Yes, I’m willing to follow all the study procedures. I hope that’s the right answer.",
+      "created_at": "2026-10-25T00:15:57.465540+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Do you work night shifts? If your schedule varies, please briefly describe your usual work hours.",
+      "created_at": "2026-10-25T00:16:00.259987+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I work daytime hours, not night shifts. I hope that answers it correctly.",
+      "created_at": "2026-10-25T00:16:01.732697+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Do you use recreational drugs?",
+      "created_at": "2026-10-25T00:16:05.008814+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I don’t use recreational drugs. I hope that answers it correctly.",
+      "created_at": "2026-10-25T00:16:06.439482+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you pregnant or breastfeeding?",
+      "created_at": "2026-10-25T00:16:09.414081+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I’m neither pregnant nor breastfeeding. I hope I answered that correctly.",
+      "created_at": "2026-10-25T00:16:14.125749+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Thanks, Darius. Your answers are with the study team. A coordinator will review them and reach out within 2 business days.",
+      "created_at": "2026-10-25T00:16:19.348435+00:00"
+    }
+  ]
+}

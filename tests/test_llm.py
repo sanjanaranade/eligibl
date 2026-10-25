@@ -218,6 +218,45 @@ def test_registered_tool_is_run_and_tool_round_is_logged(tmp_path, monkeypatch):
     assert client.responses.requests[1]["input"][-1]["type"] == "function_call_output"
 
 
+def test_malformed_tool_arguments_are_not_executed_and_agent_can_retry(tmp_path, monkeypatch):
+    configure_test_paths(tmp_path, monkeypatch)
+    malformed = SimpleNamespace(
+        type="function_call", name="lookup_study", arguments='{"criterion_id":"C1',
+        call_id="bad_call", status="completed",
+    )
+    corrected = SimpleNamespace(
+        type="function_call", name="lookup_study", arguments='{"criterion_id":"C1"}',
+        call_id="good_call", status="completed",
+    )
+    client = FakeClient([
+        response(text="", output=[malformed]),
+        response(text="", output=[corrected]),
+        response("Done"),
+    ])
+    monkeypatch.setattr(llm, "create_client", lambda: client)
+    executed = []
+    tools = {"lookup_study": {
+        "schema": {
+            "type": "function", "name": "lookup_study", "description": "Lookup.",
+            "parameters": {"type": "object", "properties": {"criterion_id": {"type": "string"}},
+                           "required": ["criterion_id"], "additionalProperties": False},
+        },
+        "handler": lambda criterion_id: executed.append(criterion_id) or {"ok": True},
+    }}
+
+    result, usage = llm.call_agent(
+        "protocol_agent",
+        [{"role": "system", "content": "Fixed."}, {"role": "user", "content": "Check."}],
+        tools=tools,
+    )
+
+    assert result == "Done"
+    assert executed == ["C1"]
+    assert usage["calls"] == 3
+    assert len(client.responses.requests[1]["input"]) == 6
+    assert json.loads(client.responses.requests[1]["input"][3]["output"])["error"]
+
+
 def test_screening_message_limit_logs_safety_and_blocks_api(tmp_path, monkeypatch):
     database, _, safety_log = configure_test_paths(tmp_path, monkeypatch)
     client = FakeClient([response()])
@@ -237,6 +276,24 @@ def test_screening_message_limit_logs_safety_and_blocks_api(tmp_path, monkeypatc
 
     with sqlite3.connect(database) as connection:
         assert connection.execute("SELECT COUNT(*) FROM safety_events").fetchone()[0] == 1
+
+
+def test_candidate_message_limit_does_not_apply_to_verifier_transcript(tmp_path, monkeypatch):
+    configure_test_paths(tmp_path, monkeypatch)
+    client = FakeClient([response(text="verification complete")])
+    monkeypatch.setattr(llm, "create_client", lambda: client)
+
+    result, _usage = llm.call_agent(
+        "screening_verifier",
+        [
+            {"role": "system", "content": "Fixed verifier instructions."},
+            {"role": "user", "content": "V" * 1200},
+        ],
+        candidate_id="synthetic-candidate",
+    )
+
+    assert result == "verification complete"
+    assert len(client.responses.requests) == 1
 
 
 def test_turn_cap_and_daily_budget_stop_calls(tmp_path, monkeypatch):

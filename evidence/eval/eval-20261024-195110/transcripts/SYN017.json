@@ -1,0 +1,164 @@
+{
+  "candidate_id": "SYN017",
+  "planned_outcome": "borderline_unclear",
+  "expected_status": "Needs review",
+  "actual_status": "Needs review",
+  "criterion_answers": [
+    {
+      "criterion_id": "C1",
+      "verdict": "met",
+      "evidence_quote": "Yes, I’m 38.",
+      "note": "Candidate reports being 38, within the required age range.",
+      "created_at": "2026-10-24T23:53:40.714576+00:00"
+    },
+    {
+      "criterion_id": "C3",
+      "verdict": "met",
+      "evidence_quote": "I’m 170 cm tall and weigh 68 kg.",
+      "note": "Calculated BMI is 23.5 kg/m², within the required range.",
+      "created_at": "2026-10-24T23:53:44.204179+00:00"
+    },
+    {
+      "criterion_id": "C4",
+      "verdict": "met",
+      "evidence_quote": "Both have stopped; my CBT-I sessions ended recently, and I’m not taking medication for a sleep disorder.",
+      "note": "Reports CBT-I sessions ended and no sleep-disorder medication currently.",
+      "created_at": "2026-10-24T23:53:59.361782+00:00"
+    },
+    {
+      "criterion_id": "C5",
+      "verdict": "met",
+      "evidence_quote": "Yes, I’m willing to follow the study procedures.",
+      "note": "The candidate confirms willingness to follow the study procedures.",
+      "created_at": "2026-10-24T23:54:02.383199+00:00"
+    },
+    {
+      "criterion_id": "C8",
+      "verdict": "met",
+      "evidence_quote": "I work daytime hours, not night shifts.",
+      "note": "Candidate reports daytime work and denies working night shifts.",
+      "created_at": "2026-10-24T23:54:04.278065+00:00"
+    },
+    {
+      "criterion_id": "C10",
+      "verdict": "met",
+      "evidence_quote": "I don’t use recreational drugs.",
+      "note": "Candidate denies recreational drug use.",
+      "created_at": "2026-10-24T23:54:06.431379+00:00"
+    },
+    {
+      "criterion_id": "C11",
+      "verdict": "met",
+      "evidence_quote": "I’m neither pregnant nor breastfeeding.",
+      "note": "Candidate reports being neither pregnant nor breastfeeding.",
+      "created_at": "2026-10-24T23:54:08.346340+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "Are you between 18 and 65 years old?",
+      "created_at": "2026-10-24T23:53:36.948995+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Yes, I’m 38.",
+      "created_at": "2026-10-24T23:53:39.179782+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "What are your current height and weight? Please include units, such as 170 cm and 68 kg, or 5 ft 7 in and 150 lb.",
+      "created_at": "2026-10-24T23:53:42.154922+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m 170 cm tall and weigh 68 kg.",
+      "created_at": "2026-10-24T23:53:43.685344+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you currently receiving medication-based or psychological treatment for a sleep disorder?",
+      "created_at": "2026-10-24T23:53:44.382653+00:00"
+    },
+    {
+      "role": "user",
+      "content": "My CBT-I ended recently, but I can’t tell whether the treatment is still active.",
+      "created_at": "2026-10-24T23:53:46.963671+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you still attending CBT-I sessions or following an ongoing treatment plan?",
+      "created_at": "2026-10-24T23:53:49.265795+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m not sure whether I’m following an ongoing treatment plan.",
+      "created_at": "2026-10-24T23:53:50.856425+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you currently taking any medication or having sessions specifically to treat a sleep disorder?",
+      "created_at": "2026-10-24T23:53:52.467224+00:00"
+    },
+    {
+      "role": "user",
+      "content": "My CBT-I sessions ended recently, but I’m not sure whether the treatment is still considered active.",
+      "created_at": "2026-10-24T23:53:54.745872+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you currently still attending CBT-I sessions or taking medication for a sleep disorder, or have both stopped?",
+      "created_at": "2026-10-24T23:53:56.565638+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Both have stopped; my CBT-I sessions ended recently, and I’m not taking medication for a sleep disorder.",
+      "created_at": "2026-10-24T23:53:57.818434+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you willing to follow the study procedures?",
+      "created_at": "2026-10-24T23:54:00.789058+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Yes, I’m willing to follow the study procedures.",
+      "created_at": "2026-10-24T23:54:02.120217+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Do you work night shifts, and what is your usual work schedule?",
+      "created_at": "2026-10-24T23:54:02.587757+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I work daytime hours, not night shifts.",
+      "created_at": "2026-10-24T23:54:03.962440+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Do you use recreational drugs?",
+      "created_at": "2026-10-24T23:54:04.574850+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I don’t use recreational drugs.",
+      "created_at": "2026-10-24T23:54:05.805597+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you pregnant, breastfeeding, both, or neither?",
+      "created_at": "2026-10-24T23:54:06.624382+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m neither pregnant nor breastfeeding.",
+      "created_at": "2026-10-24T23:54:08.057920+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "This screening has paused after reaching a safety limit. Your saved answers are available for coordinator review.",
+      "created_at": "2026-10-24T23:54:08.352650+00:00"
+    }
+  ]
+}

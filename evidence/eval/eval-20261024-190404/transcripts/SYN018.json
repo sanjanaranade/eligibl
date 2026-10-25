@@ -1,0 +1,127 @@
+{
+  "candidate_id": "SYN018",
+  "planned_outcome": "borderline_unclear",
+  "expected_status": "Needs review",
+  "actual_status": "Needs review",
+  "criterion_answers": [
+    {
+      "criterion_id": "C1",
+      "verdict": "met",
+      "evidence_quote": "I’m 31",
+      "note": "Candidate reports age 31, within the 18–65 range.",
+      "created_at": "2026-10-24T23:14:31.909763+00:00"
+    },
+    {
+      "criterion_id": "C3",
+      "verdict": "met",
+      "evidence_quote": "I’m 170 cm tall and weigh 68 kg.",
+      "note": "Calculated BMI is 23.5 kg/m², within the stated 18–35 range.",
+      "created_at": "2026-10-24T23:14:37.863013+00:00"
+    },
+    {
+      "criterion_id": "C4",
+      "verdict": "met",
+      "evidence_quote": "I’m not currently receiving medication-based or psychological treatment for a sleep disorder.",
+      "note": "Candidate clearly reports no current medication-based or psychological treatment for a sleep disorder.",
+      "created_at": "2026-10-24T23:14:42.761919+00:00"
+    },
+    {
+      "criterion_id": "C5",
+      "verdict": "met",
+      "evidence_quote": "Yes, I’m willing to follow all the study procedures.",
+      "note": "Candidate clearly confirmed willingness to follow the study procedures.",
+      "created_at": "2026-10-24T23:14:47.240013+00:00"
+    },
+    {
+      "criterion_id": "C8",
+      "verdict": "unknown",
+      "evidence_quote": "my schedule rotates, and I sometimes work overnight.",
+      "note": "The candidate cannot say how often they work overnight, so whether they are a night-shift worker remains uncertain.",
+      "created_at": "2026-10-24T23:14:55.872149+00:00"
+    },
+    {
+      "criterion_id": "C10",
+      "verdict": "met",
+      "evidence_quote": "No, I don’t use recreational drugs.",
+      "note": "Candidate clearly reports no recreational drug use.",
+      "created_at": "2026-10-24T23:15:00.071091+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "Are you between 18 and 65 years old? If you’re not sure whether you’re in that range, please tell me your age.",
+      "created_at": "2026-10-24T23:14:28.832445+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m 31, so I’m within that age range.",
+      "created_at": "2026-10-24T23:14:30.373543+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "What are your current height and weight? Please include units, such as 170 cm and 68 kg, or 5 ft 7 in and 150 lb.",
+      "created_at": "2026-10-24T23:14:33.446546+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m 170 cm tall and weigh 68 kg.",
+      "created_at": "2026-10-24T23:14:34.778011+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you currently receiving medication-based or psychological treatment for a sleep disorder?",
+      "created_at": "2026-10-24T23:14:39.386172+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m not currently receiving medication-based or psychological treatment for a sleep disorder.",
+      "created_at": "2026-10-24T23:14:41.123459+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you willing to follow the study procedures?",
+      "created_at": "2026-10-24T23:14:43.787756+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Yes, I’m willing to follow all the study procedures.",
+      "created_at": "2026-10-24T23:14:45.014862+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Do you work night shifts? If you do, please briefly describe your usual work schedule.",
+      "created_at": "2026-10-24T23:14:48.705182+00:00"
+    },
+    {
+      "role": "user",
+      "content": "My schedule rotates, and I sometimes work overnight, but I can’t say exactly how often.",
+      "created_at": "2026-10-24T23:14:50.137105+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "About how many overnight shifts do you usually work in a typical week or month?",
+      "created_at": "2026-10-24T23:14:52.080922+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m not sure exactly how many—my schedule rotates, and I sometimes work overnight.",
+      "created_at": "2026-10-24T23:14:53.475502+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Do you use recreational drugs?",
+      "created_at": "2026-10-24T23:14:57.433932+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I don’t use recreational drugs.",
+      "created_at": "2026-10-24T23:14:58.741854+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "This screening has paused after reaching a safety limit. Your saved answers are available for coordinator review.",
+      "created_at": "2026-10-24T23:15:00.075680+00:00"
+    }
+  ]
+}

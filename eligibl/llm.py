@@ -192,7 +192,7 @@ def _candidate_text_for_limit(user_text: str) -> str:
 
 def _screening_agent(agent_name: str) -> bool:
     """Identify candidate-facing screener agents whose turns are capped."""
-    return "screen" in agent_name.casefold()
+    return agent_name.casefold() == "candidate_screener"
 
 
 def _safe_summary(value: str, maximum: int = 220) -> str:
@@ -485,7 +485,23 @@ def call_agent(
                 try:
                     arguments = json.loads(raw_arguments) if isinstance(raw_arguments, str) else dict(raw_arguments)
                 except (json.JSONDecodeError, TypeError, ValueError):
-                    budget_reject("invalid_tool_arguments", "Model returned malformed tool arguments.", tool_name, "valid JSON object")
+                    # Tool arguments are model output, not trusted instructions. A
+                    # truncated/malformed call must never reach a handler; return a
+                    # bounded error to the model so it can reformulate the call.
+                    record_safety_event(
+                        database, safety_log, event="invalid_tool_arguments",
+                        limit_name="tool_arguments",
+                        details={"tool": tool_name, "detail": "Malformed JSON; tool was not executed."},
+                        agent=agent_name, candidate_id=candidate_id, run_id=active_run_id,
+                    )
+                    payload.append({
+                        "type": "function_call_output",
+                        "call_id": _value(tool_call, "call_id", ""),
+                        "output": json.dumps({
+                            "error": "Arguments were not valid JSON. Retry the same registered tool with complete valid JSON."
+                        }),
+                    })
+                    continue
                 handler = handlers.get(tool_name)
                 if handler is None:
                     budget_reject("unregistered_tool", "Model requested a tool not registered by the application.", tool_name, sorted(handlers))

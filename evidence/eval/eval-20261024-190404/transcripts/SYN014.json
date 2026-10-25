@@ -1,0 +1,127 @@
+{
+  "candidate_id": "SYN014",
+  "planned_outcome": "clearly_not_a_match",
+  "expected_status": "Not a match",
+  "actual_status": "Needs review",
+  "criterion_answers": [
+    {
+      "criterion_id": "C1",
+      "verdict": "met",
+      "evidence_quote": "I’m 41, so I’m within the study’s age range.",
+      "note": "Candidate states age 41.",
+      "created_at": "2026-10-24T23:12:12.643446+00:00"
+    },
+    {
+      "criterion_id": "C3",
+      "verdict": "met",
+      "evidence_quote": "I’m 170 cm tall and weigh 68 kg.",
+      "note": "Calculated BMI is 23.5 kg/m², within the stated 18–35 range.",
+      "created_at": "2026-10-24T23:12:22.371196+00:00"
+    },
+    {
+      "criterion_id": "C4",
+      "verdict": "met",
+      "evidence_quote": "No, I’m not currently receiving medication-based or psychological treatment for a sleep disorder.",
+      "note": "Candidate reports no current medication-based or psychological sleep-disorder treatment.",
+      "created_at": "2026-10-24T23:12:27.388481+00:00"
+    },
+    {
+      "criterion_id": "C5",
+      "verdict": "met",
+      "evidence_quote": "Yes, I’m happy to follow all the study procedures.",
+      "note": "Clearly confirms willingness to follow the study procedures.",
+      "created_at": "2026-10-24T23:12:31.626714+00:00"
+    },
+    {
+      "criterion_id": "C8",
+      "verdict": "met",
+      "evidence_quote": "No, I work during the day, so I’m not a night shift worker.",
+      "note": "Candidate reports working during the day and not working night shifts.",
+      "created_at": "2026-10-24T23:12:36.191243+00:00"
+    },
+    {
+      "criterion_id": "C10",
+      "verdict": "met",
+      "evidence_quote": "No, I don’t use recreational drugs.",
+      "note": "Candidate clearly reports no recreational drug use.",
+      "created_at": "2026-10-24T23:12:40.907155+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "Are you between 18 and 65 years old? If you’re not sure whether you’re in that range, please tell me your age.",
+      "created_at": "2026-10-24T23:12:10.090535+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m 41, so I’m within the study’s age range.",
+      "created_at": "2026-10-24T23:12:11.114297+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "What is your current height and weight? Please include units—for example, 170 cm and 68 kg, or 5 ft 7 in and 150 lb. If you don’t know, say so.",
+      "created_at": "2026-10-24T23:12:18.174395+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m 170 cm tall and weigh 68 kg.",
+      "created_at": "2026-10-24T23:12:19.401929+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you currently receiving medication-based or psychological treatment for a sleep disorder? If yes, please tell me what treatment you receive and how often.",
+      "created_at": "2026-10-24T23:12:24.023361+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I’m not currently receiving medication-based or psychological treatment for a sleep disorder.",
+      "created_at": "2026-10-24T23:12:25.649484+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you willing to follow the study procedures?",
+      "created_at": "2026-10-24T23:12:28.519044+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Yes, I’m happy to follow all the study procedures.",
+      "created_at": "2026-10-24T23:12:29.950464+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Do you work night shifts? If you do, what is your usual work schedule?",
+      "created_at": "2026-10-24T23:12:33.533706+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I work during the day, so I’m not a night shift worker.",
+      "created_at": "2026-10-24T23:12:34.862443+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Do you use recreational drugs?",
+      "created_at": "2026-10-24T23:12:37.323942+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I don’t use recreational drugs.",
+      "created_at": "2026-10-24T23:12:39.063974+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you pregnant or breastfeeding?",
+      "created_at": "2026-10-24T23:12:42.750455+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I’m neither pregnant nor breastfeeding.",
+      "created_at": "2026-10-24T23:12:44.080231+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "This screening has paused after reaching a safety limit. Your saved answers are available for coordinator review.",
+      "created_at": "2026-10-24T23:12:44.085295+00:00"
+    }
+  ]
+}
