@@ -4,6 +4,20 @@
   const dataNode = document.querySelector("#analytics-data");
   if (!dataNode) return;
   const stats = JSON.parse(dataNode.textContent);
+  const shortCriterionLabels = {
+    C1: "Age",
+    C2: "Sleep symptoms",
+    C3: "BMI",
+    C4: "Sleep treatment",
+    C5: "Study procedures",
+    C6: "Health conditions",
+    C7: "Sleep apnea / CPAP",
+    C8: "Night shift",
+    C9: "Sleep-affecting meds",
+    C10: "Drug use",
+    C11: "Pregnancy / breastfeeding",
+    C12: "Uncontrolled conditions",
+  };
   const chartOptions = {
     responsive: true,
     plugins: { legend: { display: false } },
@@ -41,7 +55,7 @@
   );
   const failureTable = document.querySelector("#failures-chart")?.nextElementSibling;
   if (stats.why_not_a_match.length) {
-    renderChart("failures-chart", failureTable, stats.why_not_a_match.map((row) => row.label), stats.why_not_a_match.map((row) => row.count), "Not satisfied", "#B85C16", true);
+    renderChart("failures-chart", failureTable, stats.why_not_a_match.map((row) => shortCriterionLabels[row.criterion_id] || row.label), stats.why_not_a_match.map((row) => row.count), "Not satisfied", "#B85C16", true);
   }
 
   const button = document.querySelector("#weekly-insights");
