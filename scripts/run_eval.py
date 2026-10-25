@@ -46,6 +46,17 @@ def _persona_for_simulator(persona: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _planned_interruption(persona: dict[str, Any], send_interruption: bool) -> str | None:
+    """Return an exact scripted interruption when the evaluator schedules it.
+
+    Attack/evaluation strings are test fixtures, not creative simulation prompts;
+    delivering them deterministically avoids measuring simulator compliance by
+    accident instead of the product's handling of the attack.
+    """
+    message = str(persona.get("special_test_message", "")).strip()
+    return message[:800] if send_interruption and message else None
+
+
 def simulate_candidate_reply(
     persona: dict[str, Any], conversation: list[dict[str, str]], *,
     candidate_id: str, run_id: str, reply_number: int, send_interruption: bool = False,
@@ -206,17 +217,20 @@ def run_evaluation(
                         and len(get_criterion_answers(database, candidate_id)) >= 1
                     )
                     reply_number += 1
-                    candidate_message, sim_usage = simulate_candidate_reply(
-                        persona, history, candidate_id=candidate_id,
-                        run_id=run_id, reply_number=reply_number,
-                        send_interruption=send_interruption,
-                    )
-                    if send_interruption:
+                    planned_message = _planned_interruption(persona, send_interruption)
+                    if planned_message is not None:
+                        candidate_message = planned_message
                         special_sent = True
-                    simulator_totals["calls"] += 1
-                    simulator_totals["input_tokens"] += int(sim_usage.get("input", 0))
-                    simulator_totals["output_tokens"] += int(sim_usage.get("output", 0))
-                    simulator_totals["cost_usd"] += float(sim_usage.get("cost_usd", 0.0))
+                    else:
+                        candidate_message, sim_usage = simulate_candidate_reply(
+                            persona, history, candidate_id=candidate_id,
+                            run_id=run_id, reply_number=reply_number,
+                            send_interruption=False,
+                        )
+                        simulator_totals["calls"] += 1
+                        simulator_totals["input_tokens"] += int(sim_usage.get("input", 0))
+                        simulator_totals["output_tokens"] += int(sim_usage.get("output", 0))
+                        simulator_totals["cost_usd"] += float(sim_usage.get("cost_usd", 0.0))
                     screener.submit_candidate_message(
                         database, candidate_id, candidate_message,
                         run_id=f"{run_id}-{source_id}-screen",

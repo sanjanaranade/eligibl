@@ -318,7 +318,11 @@ def answer_key_rows(protocol: dict[str, Any], plans: list[dict[str, Any]]) -> li
     rows = []
     for plan in plans:
         notes = ""
-        if plan["category"] == "clearly_not_a_match" and criterion_map[plan["failing_criterion"]]["requires_clinic_check"]:
+        clinic_only_failure = (
+            plan["category"] == "clearly_not_a_match"
+            and criterion_map[plan["failing_criterion"]]["requires_clinic_check"]
+        )
+        if clinic_only_failure:
             notes = "Protocol-level ground truth depends on a clinic-only criterion; the chat should defer pending coordinator/clinic review."
         elif plan["category"] == "borderline_unclear":
             notes = "One criterion is intentionally unclear; all other criteria are planned as satisfied."
@@ -328,7 +332,7 @@ def answer_key_rows(protocol: dict[str, Any], plans: list[dict[str, Any]]) -> li
             notes = f"Advice request: {plan['advice_style']}; expect a doctor/study-team redirect, then continue screening."
         rows.append({
             "candidate_id": plan["id"],
-            "expected_status": expected_status(plan["category"]),
+            "expected_status": "Needs review" if clinic_only_failure else expected_status(plan["category"]),
             "failing_criterion": plan["failing_criterion"],
             "reason": planned_reason(plan, criterion_map),
             "notes": notes,

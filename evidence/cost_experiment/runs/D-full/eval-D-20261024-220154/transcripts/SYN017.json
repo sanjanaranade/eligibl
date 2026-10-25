@@ -1,0 +1,169 @@
+{
+  "candidate_id": "SYN017",
+  "planned_outcome": "borderline_unclear",
+  "expected_status": "Needs review",
+  "actual_status": "Needs review",
+  "criterion_answers": [
+    {
+      "criterion_id": "C1",
+      "verdict": "met",
+      "evidence_quote": "Yes, I’m 38.",
+      "note": "Candidate reports age 38, within the required range.",
+      "created_at": "2026-10-25T02:03:43.805224+00:00"
+    },
+    {
+      "criterion_id": "C3",
+      "verdict": "met",
+      "evidence_quote": "I’m 170 cm tall and weigh 68 kg.",
+      "note": "BMI calculated as 23.5 kg/m², within the required 18–35 range.",
+      "created_at": "2026-10-25T02:03:44.788339+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "Are you between 18 and 65 years old?",
+      "created_at": "2026-10-25T02:03:43.108800+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Yes, I’m 38.",
+      "created_at": "2026-10-25T02:03:43.490402+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "What are your current height and weight? Please include units—for example, 170 cm and 68 kg, or 5 ft 7 in and 150 lb.",
+      "created_at": "2026-10-25T02:03:44.101757+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m 170 cm tall and weigh 68 kg.",
+      "created_at": "2026-10-25T02:03:44.428212+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you currently receiving medication-based or psychological treatment for a sleep disorder?",
+      "created_at": "2026-10-25T02:03:44.913887+00:00"
+    },
+    {
+      "role": "user",
+      "content": "My CBT-I ended recently, but I can’t tell whether the treatment is still active.",
+      "created_at": "2026-10-25T02:03:45.230643+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you still attending CBT-I sessions or otherwise receiving CBT-I treatment now?",
+      "created_at": "2026-10-25T02:03:45.556566+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m not sure whether I’m still receiving CBT-I treatment now.",
+      "created_at": "2026-10-25T02:03:46.050378+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you currently taking medication for a sleep disorder or attending CBT-I or other therapy sessions for one?",
+      "created_at": "2026-10-25T02:03:46.472722+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m not taking sleep medication or attending therapy sessions now, but I’m unsure whether my recently ended CBT-I still counts as current treatment.",
+      "created_at": "2026-10-25T02:03:46.809927+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "When was your last CBT-I session, and do you have any sessions still scheduled?",
+      "created_at": "2026-10-25T02:03:47.176075+00:00"
+    },
+    {
+      "role": "user",
+      "content": "It ended recently, but I’m not sure of the exact date or whether any sessions are still scheduled.",
+      "created_at": "2026-10-25T02:03:47.456082+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you currently taking any medication for a sleep disorder or attending any psychological treatment sessions?",
+      "created_at": "2026-10-25T02:03:47.776402+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m not taking sleep medication or attending psychological treatment sessions now, but I’m unsure whether my recently ended CBT-I still counts as current treatment.",
+      "created_at": "2026-10-25T02:03:48.201382+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "When was your last CBT-I session, and do you have any further sessions scheduled?",
+      "created_at": "2026-10-25T02:03:48.483380+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m not sure of the exact date of my last CBT-I session or whether I have any further sessions scheduled.",
+      "created_at": "2026-10-25T02:03:48.917465+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you currently receiving CBT-I or any other psychological treatment for a sleep disorder?",
+      "created_at": "2026-10-25T02:03:49.477668+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m not sure whether it still counts; my CBT-I ended recently, and I’m not attending sessions now.",
+      "created_at": "2026-10-25T02:03:49.942570+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you currently taking any medication to treat a sleep disorder?",
+      "created_at": "2026-10-25T02:03:50.280892+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I’m not taking medication to treat a sleep disorder.",
+      "created_at": "2026-10-25T02:03:50.579574+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you currently receiving psychological treatment for a sleep disorder?",
+      "created_at": "2026-10-25T02:03:50.875814+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m not attending sessions now, but I’m unsure whether my recently ended CBT-I still counts as current treatment.",
+      "created_at": "2026-10-25T02:03:51.273856+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Is your CBT-I treatment fully finished, with no further sessions or active treatment currently planned?",
+      "created_at": "2026-10-25T02:03:51.593950+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m not sure whether it’s fully finished; my CBT-I ended recently, but I don’t know whether any sessions or active treatment are still planned.",
+      "created_at": "2026-10-25T02:03:51.991230+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Do you currently have any CBT-I sessions scheduled or ongoing, or is there no treatment currently scheduled?",
+      "created_at": "2026-10-25T02:03:52.578932+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m not sure whether any CBT-I sessions are scheduled or ongoing.",
+      "created_at": "2026-10-25T02:03:52.898479+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you currently taking medication for a sleep disorder or attending therapy for one?",
+      "created_at": "2026-10-25T02:03:53.224431+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m not taking medication for a sleep disorder or attending therapy sessions, but I’m unsure whether my recently ended CBT-I still counts as current treatment.",
+      "created_at": "2026-10-25T02:03:53.579402+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Thanks, Ethan. Your answers are with the study team. A coordinator will review them and reach out within 2 business days.",
+      "created_at": "2026-10-25T02:03:53.918873+00:00"
+    }
+  ]
+}

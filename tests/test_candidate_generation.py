@@ -94,6 +94,7 @@ def test_checked_in_persona_bank_matches_answer_key_and_planned_single_failures(
     personas = json.loads((data_dir / "candidates.json").read_text(encoding="utf-8"))
     plans = generator.plan_personas(_protocol())
     plan_by_id = {row["id"]: row for row in plans}
+    criterion_by_id = {row["id"]: row for row in _protocol()["criteria"]}
     assert Counter(row["planned_outcome"] for row in personas) == {
         "clearly_eligible": 6,
         "clearly_not_a_match": 8,
@@ -106,7 +107,12 @@ def test_checked_in_persona_bank_matches_answer_key_and_planned_single_failures(
     assert set(key) == {row["id"] for row in personas}
     for persona in personas:
         plan = plan_by_id[persona["id"]]
-        assert key[persona["id"]]["expected_status"] == generator.expected_status(plan["category"])
+        clinic_only_failure = (
+            plan["category"] == "clearly_not_a_match"
+            and criterion_by_id[plan["failing_criterion"]]["requires_clinic_check"]
+        )
+        expected_status = "Needs review" if clinic_only_failure else generator.expected_status(plan["category"])
+        assert key[persona["id"]]["expected_status"] == expected_status
         target = plan["failing_criterion"]
         expected_truth = "not_satisfied" if plan["category"] == "clearly_not_a_match" else "unclear" if plan["category"] == "borderline_unclear" else None
         non_satisfied = [fact for fact in persona["facts"].values() if fact["truth"] == "not_satisfied"]

@@ -12,7 +12,7 @@ SYN010,Not a match,C5,Fails only C5 (Willingness to comply with study procedures
 SYN011,Not a match,C8,Fails only C8 (Night shift workers); every other criterion is planned as satisfied.,
 SYN012,Not a match,C10,Fails only C10 (Recreational drug use); every other criterion is planned as satisfied.,
 SYN013,Not a match,C11,Fails only C11 (Pregnancy or breastfeeding); every other criterion is planned as satisfied.,
-SYN014,Not a match,C2,Fails only C2 (Mild-to-moderate sleep disturbances); every other criterion is planned as satisfied.,Protocol-level ground truth depends on a clinic-only criterion; the chat should defer pending coordinator/clinic review.
+SYN014,Needs review,C2,Protocol-level C2 failure is clinic-only and cannot be adjudicated in chat; every chat-checkable criterion is planned as satisfied.,Corrected after full-run audit: protocol marks C2 requires_clinic_check=true, so the correct chat outcome is Needs review pending coordinator/clinic review, not Not a match.
 SYN015,Needs review,C1,"Only C1 (Age 18-65 years) is intentionally unclear, contradictory, or at an unspecified endpoint.",One criterion is intentionally unclear; all other criteria are planned as satisfied.
 SYN016,Needs review,C3,"Only C3 (BMI between 18 and 35 kg/m²) is intentionally unclear, contradictory, or at an unspecified endpoint.",One criterion is intentionally unclear; all other criteria are planned as satisfied.
 SYN017,Needs review,C4,"Only C4 (Not receiving active pharmacological or psychological treatment for sleep disorders) is intentionally unclear, contradictory, or at an unspecified endpoint.",One criterion is intentionally unclear; all other criteria are planned as satisfied.

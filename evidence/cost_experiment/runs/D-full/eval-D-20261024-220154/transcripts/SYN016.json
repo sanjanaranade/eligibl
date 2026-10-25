@@ -1,0 +1,104 @@
+{
+  "candidate_id": "SYN016",
+  "planned_outcome": "borderline_unclear",
+  "expected_status": "Needs review",
+  "actual_status": "Needs review",
+  "criterion_answers": [
+    {
+      "criterion_id": "C1",
+      "verdict": "met",
+      "evidence_quote": "Yes, I am 45 years old.",
+      "note": "Candidate reports age 45, within the required 18–65 range.",
+      "created_at": "2026-10-25T02:03:38.606199+00:00"
+    },
+    {
+      "criterion_id": "C3",
+      "verdict": "unknown",
+      "evidence_quote": "I am 170 cm and 52.02 kg.",
+      "note": "Calculated BMI is exactly 18.0; the protocol does not specify whether the endpoint is included.",
+      "created_at": "2026-10-25T02:03:39.803417+00:00"
+    },
+    {
+      "criterion_id": "C4",
+      "verdict": "met",
+      "evidence_quote": "No, I am not receiving medication-based or psychological treatment for a sleep disorder.",
+      "note": "Candidate denies current medication-based or psychological treatment for a sleep disorder.",
+      "created_at": "2026-10-25T02:03:40.826283+00:00"
+    },
+    {
+      "criterion_id": "C5",
+      "verdict": "met",
+      "evidence_quote": "Yes, I am willing to follow all study procedures.",
+      "note": "The candidate clearly states willingness to follow all study procedures.",
+      "created_at": "2026-10-25T02:03:41.750376+00:00"
+    },
+    {
+      "criterion_id": "C8",
+      "verdict": "unknown",
+      "evidence_quote": "Yes, I am willing to follow all study procedures.",
+      "note": "No response to the night-shift question has been provided.",
+      "created_at": "2026-10-25T02:03:42.024075+00:00"
+    },
+    {
+      "criterion_id": "C10",
+      "verdict": "unknown",
+      "evidence_quote": "Yes, I am willing to follow all study procedures.",
+      "note": "No response to the recreational-drug question has been provided.",
+      "created_at": "2026-10-25T02:03:42.255274+00:00"
+    },
+    {
+      "criterion_id": "C11",
+      "verdict": "unknown",
+      "evidence_quote": "Yes, I am willing to follow all study procedures.",
+      "note": "No response to the pregnancy or breastfeeding question has been provided.",
+      "created_at": "2026-10-25T02:03:42.460750+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "Are you between 18 and 65 years old?",
+      "created_at": "2026-10-25T02:03:38.019272+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Yes, I am 45 years old.",
+      "created_at": "2026-10-25T02:03:38.290595+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "What are your current height and weight? Please include units—for example, 170 cm and 68 kg, or 5 ft 7 in and 150 lb.",
+      "created_at": "2026-10-25T02:03:38.825846+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I am 170 cm and 52.02 kg.",
+      "created_at": "2026-10-25T02:03:39.167939+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you currently receiving medication-based or psychological treatment for a sleep disorder?",
+      "created_at": "2026-10-25T02:03:40.109384+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I am not receiving medication-based or psychological treatment for a sleep disorder.",
+      "created_at": "2026-10-25T02:03:40.431269+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you willing to follow the study procedures?",
+      "created_at": "2026-10-25T02:03:41.047121+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Yes, I am willing to follow all study procedures.",
+      "created_at": "2026-10-25T02:03:41.355970+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Thanks, Camila. Your answers are with the study team. A coordinator will review them and reach out within 2 business days.",
+      "created_at": "2026-10-25T02:03:42.466302+00:00"
+    }
+  ]
+}
