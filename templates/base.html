@@ -3,12 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#FAF8F5">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/favicon.svg') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <title>{% block title %}Eligibl{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
   <script defer src="{{ url_for('static', filename='js/app.js') }}"></script>
 </head>
 <body>
-  <header class="site-header"><a class="wordmark" href="{{ url_for('main.index') }}">Eligibl</a></header>
+  <header class="site-header"><a class="wordmark" href="{{ url_for('main.index') }}" aria-label="Eligibl home"><img src="{{ url_for('static', filename='img/eligibl-logo.svg') }}" alt="eligibl — the right people, the right study."></a></header>
   <main class="page {% block page_class %}{% endblock %}">{% block content %}{% endblock %}</main>
   <footer>Demo · synthetic data only</footer>
 </body>

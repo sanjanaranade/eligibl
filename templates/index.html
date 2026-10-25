@@ -2,19 +2,20 @@
 {% block title %}Eligibl — study screening{% endblock %}
 {% block content %}
   <section class="welcome">
+    <div class="welcome-hero-art" aria-hidden="true"><svg class="pathway-art" viewBox="0 0 520 220"><path d="M8 172C110 172 82 35 210 48s90 130 190 110 84-102 116-111"/></svg><span class="organic-blob blob-one"></span><span class="organic-blob blob-two"></span></div>
     <p class="eyebrow">Clinical research, made clearer</p>
-    <h1>Welcome to Eligibl</h1>
-    <p class="lede">A coordinator-reviewed study screening demo using synthetic candidate data.</p>
+    <h1>the right people,<br>the right study.</h1>
+    <p class="lede">Eligibl gives study teams a thoughtful first step: clear questions, evidence-backed review, and a person in the loop.</p>
     {% if not has_api_key %}
       <p class="notice" role="status">Model screening is not configured yet. Add <code>PORTKEY_API_KEY</code> to a <code>.env</code> file in this project folder or its parent folder.</p>
     {% endif %}
     <div class="cards">
       <a class="card" href="{{ url_for('main.coordinator') }}">
-        <span class="card-kicker">Study team</span><strong>I'm a coordinator</strong>
+        <span class="card-kicker">For the study team</span><strong>I'm a coordinator <span aria-hidden="true">→</span></strong>
         <span>Review candidate screening and outreach drafts.</span>
       </a>
       <a class="card" href="{{ url_for('main.screen') }}">
-        <span class="card-kicker">Participant</span><strong>I'm here to be screened</strong>
+        <span class="card-kicker">For a participant</span><strong>I'm here to be screened <span aria-hidden="true">→</span></strong>
         <span>Answer questions about a study's criteria.</span>
       </a>
     </div>

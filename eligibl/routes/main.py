@@ -2,6 +2,7 @@
 
 from uuid import UUID
 import hashlib
+import json
 
 from flask import Blueprint, current_app, jsonify, render_template, request
 
@@ -57,9 +58,15 @@ def coordinator():
     usage = usage_totals_today(current_app.config["DATABASE"], load_limits()["timezone"])
     stats = weekly_funnel_stats(current_app.config["DATABASE"], load_limits()["timezone"])
     limits = load_limits()
+    protocol_path = REPO_ROOT / "data" / "protocol.json"
+    try:
+        study_title = json.loads(protocol_path.read_text(encoding="utf-8")).get("study_title", "")
+    except (OSError, json.JSONDecodeError):
+        study_title = ""
     return render_template(
         "coordinator.html", candidates=candidates, usage=usage,
         budget=limits["daily_budget_usd"], analytics=stats,
+        study_title=study_title,
         budget_pause=daily_budget_blocked_today(current_app.config["DATABASE"], limits["timezone"]),
     )
 

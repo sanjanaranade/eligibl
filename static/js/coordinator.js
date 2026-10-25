@@ -40,6 +40,17 @@
   const renderDetail = (candidate) => {
     const criteria = candidate.criteria || [];
     const initials = candidate.display_name.trim().split(/\s+/).map((part) => part[0]).join("").toUpperCase();
+    const statusIcons = { "Likely eligible": "✓", "Not a match": "×", "Needs review": "!", "Flagged": "⚑", "In progress": "◷", "Approved": "✓" };
+    const journey = [
+      ["Screened", candidate.session_status === "completed"],
+      ["Reviewed", (candidate.actions || []).length > 0],
+      ["Approved", candidate.coordinator_status === "approved"],
+      ["Contacted", Boolean(candidate.contacted_at)],
+      ["Reminded", false],
+    ];
+    let currentJourney = journey.findIndex(([, done]) => !done);
+    if (currentJourney < 0) currentJourney = journey.length - 1;
+    const journeyMarkup = `<div class="journey" aria-label="Candidate journey">${journey.map(([label, done], index) => `<span class="journey-step ${done ? "done" : ""} ${index === currentJourney ? "current" : ""}">${escapeHtml(label)}</span>`).join("")}</div>`;
     const slotOptions = (candidate.available_slots || []).map((slot) => `<option value="${escapeHtml(slot.label)}" ${candidate.chosen_slot === slot.label ? "selected" : ""}>${escapeHtml(slot.label)}</option>`).join("");
     const criterionCards = criteria.map((item) => {
       const answer = item.answer;
@@ -52,8 +63,10 @@
       return `<article class="review-criterion"><div class="review-criterion-head"><span class="verdict-icon verdict-${verdict}">${icon}</span><div><strong>${escapeHtml(item.id)} · ${escapeHtml(verdictLabel)}</strong><p>${escapeHtml(item.requirement)}</p></div></div>${quote}${note}${clinic}</article>`;
     }).join("");
     const transcript = (candidate.transcript || []).map((message) => `<p class="transcript-message transcript-${escapeHtml(message.role)}"><b>${message.role === "user" ? escapeHtml(candidate.display_name) : "Eligibl"}</b><span>${escapeHtml(message.content)}</span></p>`).join("");
-    content.innerHTML = `<div class="detail-person"><span class="candidate-avatar large">${escapeHtml(initials)}</span><div><h2>${escapeHtml(candidate.display_name)}</h2><span class="status-pill status-${escapeHtml(candidate.decision_label.toLowerCase().replaceAll(" ", "-"))}">${escapeHtml(candidate.decision_label)}</span></div></div>
+    const displayStatus = candidate.decision_label;
+    content.innerHTML = `<div class="detail-person"><span class="candidate-avatar large">${escapeHtml(initials)}</span><div><h2>${escapeHtml(candidate.display_name)}</h2><span class="status-pill status-${escapeHtml(displayStatus.toLowerCase().replaceAll(" ", "-"))}"><span aria-hidden="true">${statusIcons[displayStatus] || "◷"}</span> ${escapeHtml(displayStatus)}</span></div></div>
       <p class="detail-meta">${candidate.criteria_met} of ${candidate.criteria_total} criteria met · ${candidate.total_tokens} tokens · $${Number(candidate.total_cost).toFixed(5)}</p>
+      ${journeyMarkup}
       ${candidate.override_reason ? `<p class="override-note">Coordinator override: ${escapeHtml(candidate.override_reason)}</p>` : ""}
       <div class="detail-tabs" role="tablist"><button class="detail-tab selected" data-panel="review" role="tab" aria-selected="true">Review</button><button class="detail-tab" data-panel="trace" role="tab" aria-selected="false">Trace (${candidate.trace.length})</button></div>
       <section class="detail-tab-content" data-content="review"><h3>Verifier summary</h3><p class="verifier-summary">${escapeHtml(candidate.verifier_summary || "Verification is pending or was not completed; please review the transcript and evidence.")}</p><h3>Criterion review</h3><div class="review-criteria">${criterionCards}</div>
@@ -110,7 +123,11 @@
       const response = await fetch(`/api/coordinator/candidates/${encodeURIComponent(activeId)}/actions`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Action could not be saved.");
-      window.location.reload();
+      if (action === "approve") {
+        const toast = document.querySelector("#approval-toast");
+        if (toast) { toast.hidden = false; window.setTimeout(() => window.location.reload(), 850); }
+        else window.location.reload();
+      } else window.location.reload();
     } catch (error) {
       content.querySelector(".action-error").textContent = error.message;
       button.disabled = false;

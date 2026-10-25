@@ -2,8 +2,9 @@
 {% block title %}Candidate screening — Eligibl{% endblock %}
 {% block content %}
   <section class="screening-shell" data-screening-app>
-    <p class="eyebrow">Candidate screening · Demo</p>
-    <h1>A calm first step</h1>
+    <header class="screen-brandline"><a href="{{ url_for('main.index') }}"><img src="{{ url_for('static', filename='img/eligibl-logo.svg') }}" alt="eligibl"></a><span>{{ protocol.study_title if protocol else 'Study screening' }}</span></header>
+    <p class="eyebrow">A calm first step · Demo</p>
+    <h1>Let's check a few things</h1>
     {% if protocol_error %}<p class="notice" role="alert">{{ protocol_error }}</p>{% endif %}
     <section class="study-intro" id="screening-intro">
       {% if protocol %}
@@ -29,13 +30,14 @@
 
     <section id="screening-chat" class="chat-panel" hidden aria-label="Screening chat">
       <p id="safety-notice" class="chat-safety-notice" role="status" hidden></p>
+      <p class="pinned-disclaimer">A few questions to help the study team review your information. This is not medical advice.</p>
       <div class="chat-topline">
-        <div><p class="chat-kicker">Your screening chat</p><p id="progress-label" class="progress-label">Question 1 of 1</p><span id="screening-status" class="chat-status" hidden>Flagged · coordinator review</span></div>
+        <div><p class="chat-kicker">Your screening chat</p><p id="progress-label" class="progress-label">Question 1 of 1 <span>· About 3 min left</span></p><span id="screening-status" class="chat-status" hidden>Flagged · coordinator review</span></div>
         <a href="{{ url_for('main.index') }}" class="chat-exit">Exit</a>
       </div>
       <div class="progress-track" role="progressbar" aria-label="Screening progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="progress-fill"></span></div>
       <div id="message-list" class="message-list" aria-live="polite" aria-relevant="additions"></div>
-      <div id="typing-indicator" class="typing-indicator" hidden><span></span><span></span><span></span><em>Eligibl is thinking…</em></div>
+      <div id="typing-indicator" class="typing-indicator" hidden aria-live="polite"><svg class="loading-check" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13"/><path d="m9 16 5 5 10-11"/></svg><span class="loading-phrase phrase-one">Reading the protocol…</span><span class="loading-phrase phrase-two">Checking criteria…</span><span class="loading-phrase phrase-three">Gathering evidence…</span></div>
       <div id="quick-replies" class="quick-replies" aria-label="Quick replies"></div>
       <form id="message-form" class="message-form">
         <label class="sr-only" for="candidate-message">Your response</label>
@@ -46,6 +48,7 @@
     </section>
 
     <section id="screening-complete" class="completion-card" hidden>
+      <div class="completion-check" aria-hidden="true"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="23"/><path d="m14 27 8 8 17-19"/></svg></div>
       <p class="eyebrow">Screening chat complete</p>
       <h2>Thank you, <span id="completion-name"></span>.</h2>
       <p id="completion-message" class="completion-message"></p>
