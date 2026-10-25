@@ -79,6 +79,29 @@ def test_coordinator_dashboard_and_safety_pages_render_with_navigation(tmp_path)
         assert b'class="study-picker-summary-id">NCT07497698</span>' in response.data
 
 
+def test_screened_metric_includes_all_ended_sessions_but_not_active_ones(tmp_path):
+    import json
+
+    from eligibl.config import REPO_ROOT
+    from eligibl.db import create_candidate_screening, set_screening_status
+
+    database = str(tmp_path / "ended-screenings.db")
+    app = create_app({"TESTING": True, "DATABASE": database})
+    protocol = json.loads((REPO_ROOT / "data" / "protocol.json").read_text(encoding="utf-8"))
+    for candidate_id, name, status in (
+        ("normally-completed", "Alex", "completed"),
+        ("stopped-at-limit", "Aria", "turn_limit"),
+        ("still-active", "Sam", "in_progress"),
+    ):
+        create_candidate_screening(database, candidate_id, name, protocol)
+        set_screening_status(database, candidate_id, status)
+
+    response = app.test_client().get("/coordinator")
+
+    assert response.status_code == 200
+    assert b'<article class="metric-card"><span>Screened</span><strong>2</strong><small>Ended screenings</small>' in response.data
+
+
 def test_coordinator_detail_and_reason_required_override(tmp_path):
     import json
 
