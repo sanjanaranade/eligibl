@@ -14,6 +14,7 @@ from ..llm import call_agent, compose_messages
 
 
 AGENT_NAME = "screening_verifier"
+SAFETY_LOG_PATH = REPO_ROOT / "logs" / "safety.jsonl"
 VERIFIER_SCHEMA = {
     "name": "screening_verification",
     "schema": {
@@ -79,7 +80,7 @@ def verify_screening(
                 answer["evidence_quote"], "Evidence not found in transcript",
             )
             db.record_safety_event(
-                database, REPO_ROOT / "logs" / "safety.jsonl",
+                database, SAFETY_LOG_PATH,
                 event="verifier_quote_missing", limit_name="evidence_provenance",
                 details={"criterion_id": answer["criterion_id"], "reason": "Evidence not found in transcript"},
                 agent=AGENT_NAME, candidate_id=candidate_id,

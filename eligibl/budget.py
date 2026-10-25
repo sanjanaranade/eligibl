@@ -31,9 +31,9 @@ def load_pricing(path: str | Path = PRICING_PATH) -> dict[str, Any]:
     return _load_json(path)
 
 
-def load_limits(path: str | Path = LIMITS_PATH) -> dict[str, Any]:
+def load_limits(path: str | Path | None = None) -> dict[str, Any]:
     """Load runtime guardrail limits."""
-    return _load_json(path)
+    return _load_json(path or LIMITS_PATH)
 
 
 def compute_cost_usd(

@@ -45,7 +45,7 @@ _PROMPT_INJECTION_PATTERNS = (
     ("system_prompt_request", re.compile(r"\b(system prompt|hidden prompt|developer instructions?)\b", re.I)),
     ("identity_override", re.compile(r"\b(you are now|pretend (?:to be|you are)|act as|role[ -]?play|in character)\b", re.I)),
     ("eligibility_manipulation", re.compile(r"\b(mark me|say that i am|declare me|make me)\b.{0,50}\b(eligible|qualified|a match)\b", re.I)),
-    ("other_candidate_request", re.compile(r"\b(other|another|previous|different) candidate\b|\b(other candidates?|someone else's)\b", re.I)),
+    ("other_candidate_request", re.compile(r"\b(other|another|previous|different) candidate\b|\b(other candidates?|someone else's)\b|\blast (?:person|candidate)\b", re.I)),
 )
 
 SYSTEM_PROMPT = """You are Eligibl's warm, calm, plain-language study screener. Collect answers to the supplied checklist, one question at a time.
@@ -441,6 +441,12 @@ def _run_agent_turn(
         answer = _completion_text(session["display_name"])
     elif turns >= int(limits["max_screening_turns_per_candidate"]):
         db.set_screening_status(database, candidate_id, "turn_limit")
+        db.record_safety_event(
+            database, SAFETY_LOG_PATH,
+            event="screening_turn_limit", limit_name="max_screening_turns_per_candidate",
+            details={"blocked": "Screening stopped at the configured turn limit; coordinator review is required."},
+            agent=AGENT_NAME, candidate_id=candidate_id,
+        )
         answer = _completion_text(session["display_name"])
     else:
         if _UNSAFE_CLAIM.search(answer) or _MEDICAL_DIRECTIVE.search(answer):

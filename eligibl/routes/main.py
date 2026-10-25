@@ -111,6 +111,15 @@ def approve_email_draft(draft_id: int):
         validate_draft(draft["draft_type"], draft["subject"], draft["body"], draft.get("chosen_slot", ""))
         result = queue_email_draft(current_app.config["DATABASE"], draft_id)
     except DraftValidationError as exc:
+        record_safety_event(
+            current_app.config["DATABASE"], SAFETY_LOG_PATH,
+            event="email_draft_blocked", limit_name="outreach_content_validation",
+            details={
+                "blocked": str(exc),
+                "offending_text": f"{draft['subject']} {draft['body']}",
+            },
+            agent="coordinator_email_approval", candidate_id=draft["candidate_id"],
+        )
         return jsonify(error=str(exc)), 400
     except ValueError as exc:
         return jsonify(error=str(exc)), 400
