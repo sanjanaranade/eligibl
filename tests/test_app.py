@@ -10,10 +10,12 @@ def test_homepage_has_two_entry_cards_and_synthetic_footer(tmp_path):
     assert response.status_code == 200
     assert b"I'm a coordinator" in response.data
     assert b"I'm here to be screened" in response.data
-    assert b"Explore a study." in response.data
+    assert b"The right people," in response.data
     assert b"participants" in response.data.lower()
     assert b'class="welcome-brand" href="/"' in response.data
-    assert b"a clearer path for everyone" in response.data.lower()
+    assert b"for coordinators and prospective participants" in response.data.lower()
+    logo = app.test_client().get("/static/img/eligibl-logo.svg")
+    assert b"FOR COORDINATORS &amp; FUTURE PARTICIPANTS" in logo.data
     assert b"Demo \xc2\xb7 synthetic data only" in response.data
 
 
