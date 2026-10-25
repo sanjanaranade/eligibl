@@ -51,6 +51,19 @@ def _availability_config() -> dict[str, Any]:
     return json.loads(AVAILABILITY_PATH.read_text(encoding="utf-8"))
 
 
+def _slot_is_mentioned(text: str, slot: dict[str, str]) -> bool:
+    """Check that an email includes a slot's unambiguous month/day and time.
+
+    Generated copy may omit redundant weekday, year, or timezone details from
+    the display label. It must still name both the configured date and time.
+    """
+    start = datetime.fromisoformat(slot["start_at"])
+    day = f"{start.day}"
+    date_pattern = rf"\b{re.escape(start.strftime('%B'))}\s+{day}\b"
+    time_label = start.strftime("%I:%M %p").lstrip("0")
+    return bool(re.search(date_pattern, text, re.I) and re.search(rf"\b{re.escape(time_label)}\b", text, re.I))
+
+
 def _schedule(candidate: dict[str, str], draft_type: str) -> str:
     """Compute the send time in code so the model cannot schedule at an unsafe time."""
     now = datetime.now(UTC)
@@ -88,11 +101,12 @@ def validate_draft(draft_type: str, subject: str, body: str, chosen_slot: str = 
     if _BENEFIT_PROMISE.search(subject + " " + body):
         raise DraftValidationError("Remove any benefit or payment promise that is not authorized in the study protocol.")
     if draft_type == "invitation":
-        missing_slots = [slot["label"] for slot in get_available_slots() if slot["label"].casefold() not in body.casefold()]
+        missing_slots = [slot["label"] for slot in get_available_slots() if not _slot_is_mentioned(body, slot)]
         if missing_slots:
             raise DraftValidationError("Include all three proposed visit times from the availability list.")
     if draft_type in {"reminder_2_days", "reminder_morning_of"} and chosen_slot:
-        if chosen_slot.casefold() not in body.casefold():
+        selected = next((slot for slot in get_available_slots() if slot["label"].casefold() == chosen_slot.casefold()), None)
+        if selected is None or not _slot_is_mentioned(body, selected):
             raise DraftValidationError("Mention the selected visit time in this reminder.")
     if draft_type == "not_a_match":
         if not re.search(r"\bnot a match for this study\b", body, re.I):

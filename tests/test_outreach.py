@@ -78,6 +78,20 @@ def test_invitation_must_list_all_three_slots_and_reminder_must_name_chosen_slot
         outreach.validate_draft("reminder_2_days", "Reminder", _good_body("Your visit is coming up."), "Tuesday, November 3, 2026 at 10:00 AM ET")
 
 
+def test_slot_safety_check_accepts_date_and_time_without_redundant_year_or_timezone():
+    slots = outreach.get_available_slots()
+    abbreviated_options = (
+        "Tuesday, November 3 at 10:00 AM; "
+        "Thursday, November 5 at 2:00 PM; "
+        "Monday, November 9 at 9:30 AM"
+    )
+    invitation_body = _good_body(f"Proposed visit times: {abbreviated_options}.")
+    outreach.validate_draft("invitation", "Study visit", invitation_body)
+
+    reminder = _good_body("Your visit is Monday, November 9 at 9:30 AM.")
+    outreach.validate_draft("reminder_2_days", "Visit reminder", reminder, slots[2]["label"])
+
+
 def test_availability_has_three_upcoming_sample_slots():
     slots = outreach.get_available_slots()
     assert len(slots) == 3
