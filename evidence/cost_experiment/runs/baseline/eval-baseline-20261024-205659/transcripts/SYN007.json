@@ -1,0 +1,76 @@
+{
+  "candidate_id": "SYN007",
+  "planned_outcome": "clearly_not_a_match",
+  "expected_status": "Not a match",
+  "actual_status": "Not a match",
+  "criterion_answers": [
+    {
+      "criterion_id": "C1",
+      "verdict": "not_met",
+      "evidence_quote": "No, I’m 17, so I’m under 18.",
+      "note": "The candidate reports being 17, below the required age range.",
+      "created_at": "2026-10-25T00:58:01.780010+00:00"
+    },
+    {
+      "criterion_id": "C3",
+      "verdict": "met",
+      "evidence_quote": "I’m 170 cm tall and weigh 68 kg; my BMI is about 23.5.",
+      "note": "Calculated BMI from reported measurements is 23.5 kg/m², within 18–35.",
+      "created_at": "2026-10-25T00:58:09.025130+00:00"
+    },
+    {
+      "criterion_id": "C4",
+      "verdict": "met",
+      "evidence_quote": "No, I’m not receiving medication-based or psychological treatment for a sleep disorder.",
+      "note": "Candidate denies currently receiving either type of active treatment.",
+      "created_at": "2026-10-25T00:58:16.288357+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "Are you between 18 and 65 years old?",
+      "created_at": "2026-10-25T00:57:59.908652+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I’m 17, so I’m under 18.",
+      "created_at": "2026-10-25T00:58:00.162278+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "What is your current height and weight? Please include units, such as 170 cm and 68 kg or 5 ft 7 in and 150 lb.",
+      "created_at": "2026-10-25T00:58:03.522793+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m 170 cm tall and weigh 68 kg; my BMI is about 23.5.",
+      "created_at": "2026-10-25T00:58:05.231931+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you currently receiving medication-based or psychological treatment for a sleep disorder?",
+      "created_at": "2026-10-25T00:58:11.250813+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I’m not receiving medication-based or psychological treatment for a sleep disorder.",
+      "created_at": "2026-10-25T00:58:12.358745+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you willing to follow the study procedures?",
+      "created_at": "2026-10-25T00:58:17.893658+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Yes, I’m willing to follow all the study procedures.",
+      "created_at": "2026-10-25T00:58:18.977808+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "This screening has paused after reaching a safety limit. Your saved answers are available for coordinator review.",
+      "created_at": "2026-10-25T00:58:18.983421+00:00"
+    }
+  ]
+}

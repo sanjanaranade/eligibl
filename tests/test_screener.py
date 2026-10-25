@@ -36,6 +36,33 @@ def test_screener_prompt_interprets_exclusions_against_not_requirement():
     assert "candidate who reports that excluded condition is “not_satisfied”" in screener.SYSTEM_PROMPT
 
 
+def test_cost_variants_apply_protocol_history_summary_and_prefix_flags(tmp_path):
+    protocol = json.loads((REPO_ROOT / "data" / "protocol.json").read_text(encoding="utf-8"))
+    database = str(tmp_path / "variants.db")
+    init_db(database)
+    create_candidate_screening(database, "variant-test", "Alex", protocol)
+    for index in range(4):
+        save_candidate_message(database, "variant-test", "assistant", f"Question {index}?")
+        save_candidate_message(database, "variant-test", "user", f"Answer {index}.")
+    save_criterion_answer(database, "variant-test", "C1", "satisfied", "Answer 0.", "age")
+
+    baseline = screener._build_model_messages(database, "variant-test", protocol, start=False, variant="baseline")
+    variant_a = screener._build_model_messages(database, "variant-test", protocol, start=False, variant="A")
+    variant_b = screener._build_model_messages(database, "variant-test", protocol, start=False, variant="B")
+
+    assert "original_text" in baseline[0]["content"]
+    assert '"requirement"' in variant_b[0]["content"]
+    assert "satisfied_when" not in variant_b[0]["content"]
+    summary_marker = "RUNNING_RECORDED_ANSWER_SUMMARY_JSON:"
+    assert summary_marker in variant_a[0]["content"]
+    assert summary_marker not in variant_b[0]["content"]
+    assert any(summary_marker in row["content"] for row in variant_b[1:])
+    assert len([row for row in baseline if row["role"] in {"assistant", "user"}]) > len(
+        [row for row in variant_b if row["role"] in {"assistant", "user"}]
+    )
+    assert len([row for row in variant_b if row["role"] in {"assistant", "user"}]) <= 8
+
+
 def test_record_answer_requires_exact_quote_from_latest_candidate_message(tmp_path):
     database = str(tmp_path / "chat.db")
     protocol = json.loads((REPO_ROOT / "data" / "protocol.json").read_text(encoding="utf-8"))

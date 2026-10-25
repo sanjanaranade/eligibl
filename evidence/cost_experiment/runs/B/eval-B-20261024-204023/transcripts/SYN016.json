@@ -1,0 +1,100 @@
+{
+  "candidate_id": "SYN016",
+  "planned_outcome": "borderline_unclear",
+  "expected_status": "Needs review",
+  "actual_status": "Needs review",
+  "criterion_answers": [
+    {
+      "criterion_id": "C1",
+      "verdict": "met",
+      "evidence_quote": "Yes, I am 45 years old.",
+      "note": "Candidate reports age 45, within the required range.",
+      "created_at": "2026-10-25T00:43:39.122623+00:00"
+    },
+    {
+      "criterion_id": "C3",
+      "verdict": "unknown",
+      "evidence_quote": "I am 170 cm tall and weigh 52.02 kg.",
+      "note": "Calculated BMI is exactly 18; protocol does not specify endpoint inclusion.",
+      "created_at": "2026-10-25T00:43:47.456710+00:00"
+    },
+    {
+      "criterion_id": "C4",
+      "verdict": "met",
+      "evidence_quote": "I am not receiving medication-based or psychological treatment for a sleep disorder.",
+      "note": "Candidate denies current medication-based or psychological treatment for a sleep disorder.",
+      "created_at": "2026-10-25T00:43:50.900680+00:00"
+    },
+    {
+      "criterion_id": "C5",
+      "verdict": "met",
+      "evidence_quote": "Yes, I am willing to follow all study procedures.",
+      "note": "Confirms willingness to follow the study procedures.",
+      "created_at": "2026-10-25T00:43:55.098711+00:00"
+    },
+    {
+      "criterion_id": "C8",
+      "verdict": "met",
+      "evidence_quote": "No, I work daytime, not night shifts.",
+      "note": "Candidate reports working daytime and not night shifts.",
+      "created_at": "2026-10-25T00:44:00.217863+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "Are you between 18 and 65 years old?",
+      "created_at": "2026-10-25T00:43:37.155105+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Yes, I am 45 years old.",
+      "created_at": "2026-10-25T00:43:37.425921+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "What is your current height and weight? Please include units, such as 170 cm and 68 kg or 5 ft 7 in and 150 lb.",
+      "created_at": "2026-10-25T00:43:40.762833+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I am 170 cm tall and weigh 52.02 kg.",
+      "created_at": "2026-10-25T00:43:41.171912+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you currently receiving medication-based or psychological treatment for a sleep disorder?",
+      "created_at": "2026-10-25T00:43:48.952518+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I am not receiving medication-based or psychological treatment for a sleep disorder.",
+      "created_at": "2026-10-25T00:43:49.228616+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you willing to follow the study procedures?",
+      "created_at": "2026-10-25T00:43:52.540584+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Yes, I am willing to follow all study procedures.",
+      "created_at": "2026-10-25T00:43:52.947865+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Do you work night shifts?",
+      "created_at": "2026-10-25T00:43:56.632509+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I work daytime, not night shifts.",
+      "created_at": "2026-10-25T00:43:58.658958+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "This screening has paused after reaching a safety limit. Your saved answers are available for coordinator review.",
+      "created_at": "2026-10-25T00:44:00.224274+00:00"
+    }
+  ]
+}

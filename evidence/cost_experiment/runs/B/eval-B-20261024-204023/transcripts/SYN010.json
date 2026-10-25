@@ -1,0 +1,93 @@
+{
+  "candidate_id": "SYN010",
+  "planned_outcome": "clearly_not_a_match",
+  "expected_status": "Not a match",
+  "actual_status": "Not a match",
+  "criterion_answers": [
+    {
+      "criterion_id": "C1",
+      "verdict": "met",
+      "evidence_quote": "Yes, I’m 47, so I’m between 18 and 65.",
+      "note": "Candidate reports age 47, within the required range.",
+      "created_at": "2026-10-25T00:42:50.436874+00:00"
+    },
+    {
+      "criterion_id": "C3",
+      "verdict": "met",
+      "evidence_quote": "I’m 170 cm tall and weigh 68 kg.",
+      "note": "Calculated BMI is 23.5 kg/m², within the required 18–35 range.",
+      "created_at": "2026-10-25T00:42:57.547083+00:00"
+    },
+    {
+      "criterion_id": "C4",
+      "verdict": "met",
+      "evidence_quote": "No, I’m not currently receiving medication-based or psychological treatment for a sleep disorder.",
+      "note": "Candidate denies current medication-based or psychological sleep-disorder treatment.",
+      "created_at": "2026-10-25T00:43:04.521623+00:00"
+    },
+    {
+      "criterion_id": "C5",
+      "verdict": "not_met",
+      "evidence_quote": "No, I’m not willing to follow the study procedures.",
+      "note": "The candidate explicitly says they are not willing to follow the study procedures.",
+      "created_at": "2026-10-25T00:43:09.426437+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "Are you between 18 and 65 years old?",
+      "created_at": "2026-10-25T00:42:47.944608+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Yes, I’m 47, so I’m between 18 and 65.",
+      "created_at": "2026-10-25T00:42:48.374840+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "What are your current height and weight? Please include units—for example, 170 cm and 68 kg, or 5 ft 7 in and 150 lb. If you do not know, say so.",
+      "created_at": "2026-10-25T00:42:52.019765+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m 170 cm tall and weigh 68 kg.",
+      "created_at": "2026-10-25T00:42:53.466564+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you currently receiving medication-based or psychological treatment for a sleep disorder?",
+      "created_at": "2026-10-25T00:42:58.687428+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I’m not currently receiving medication-based or psychological treatment for a sleep disorder.",
+      "created_at": "2026-10-25T00:43:00.106570+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you willing to follow the study procedures?",
+      "created_at": "2026-10-25T00:43:05.844926+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I’m not willing to follow the study procedures.",
+      "created_at": "2026-10-25T00:43:07.379382+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Do you work night shifts?",
+      "created_at": "2026-10-25T00:43:10.960721+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I work during the day, not night shifts.",
+      "created_at": "2026-10-25T00:43:12.292711+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "This screening has paused after reaching a safety limit. Your saved answers are available for coordinator review.",
+      "created_at": "2026-10-25T00:43:12.301109+00:00"
+    }
+  ]
+}

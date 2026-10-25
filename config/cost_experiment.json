@@ -1,0 +1,48 @@
+{
+  "default_variant": "baseline",
+  "max_experiment_cost_usd": 3.0,
+  "sample_candidate_ids": [
+    "SYN001",
+    "SYN002",
+    "SYN003",
+    "SYN007",
+    "SYN008",
+    "SYN009",
+    "SYN010",
+    "SYN015",
+    "SYN016",
+    "SYN017",
+    "SYN020",
+    "SYN023"
+  ],
+  "variants": {
+    "baseline": {
+      "protocol_context": "full_protocol",
+      "history": "all",
+      "running_answer_summary": false,
+      "cache_static_first": false,
+      "skip_verifier_on_not_match": false
+    },
+    "A": {
+      "protocol_context": "parsed_checklist",
+      "history": "last_6",
+      "running_answer_summary": true,
+      "cache_static_first": false,
+      "skip_verifier_on_not_match": false
+    },
+    "B": {
+      "protocol_context": "parsed_checklist",
+      "history": "last_6",
+      "running_answer_summary": true,
+      "cache_static_first": true,
+      "skip_verifier_on_not_match": false
+    },
+    "C": {
+      "protocol_context": "parsed_checklist",
+      "history": "last_6",
+      "running_answer_summary": true,
+      "cache_static_first": true,
+      "skip_verifier_on_not_match": true
+    }
+  }
+}

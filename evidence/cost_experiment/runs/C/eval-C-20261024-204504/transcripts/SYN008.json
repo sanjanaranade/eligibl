@@ -1,0 +1,117 @@
+{
+  "candidate_id": "SYN008",
+  "planned_outcome": "clearly_not_a_match",
+  "expected_status": "Not a match",
+  "actual_status": "Needs review",
+  "criterion_answers": [
+    {
+      "criterion_id": "C1",
+      "verdict": "met",
+      "evidence_quote": "Yes, I am 42 years old.",
+      "note": "Candidate reports age 42, within the required 18–65 range.",
+      "created_at": "2026-10-25T00:47:27.066118+00:00"
+    },
+    {
+      "criterion_id": "C4",
+      "verdict": "met",
+      "evidence_quote": "No, I am not getting medicine or psychological treatment for sleep now.",
+      "note": "Candidate denies current medication-based or psychological treatment for sleep.",
+      "created_at": "2026-10-25T00:47:31.880966+00:00"
+    },
+    {
+      "criterion_id": "C5",
+      "verdict": "met",
+      "evidence_quote": "Yes, I am willing to follow all study procedures.",
+      "note": "Confirms willingness to follow the study procedures.",
+      "created_at": "2026-10-25T00:47:43.350033+00:00"
+    },
+    {
+      "criterion_id": "C8",
+      "verdict": "met",
+      "evidence_quote": "No, I work in daytime, not night shifts.",
+      "note": "Candidate states they work daytime and do not work night shifts.",
+      "created_at": "2026-10-25T00:47:50.417572+00:00"
+    },
+    {
+      "criterion_id": "C10",
+      "verdict": "met",
+      "evidence_quote": "No, I do not use recreational drugs.",
+      "note": "Candidate denies recreational drug use, meeting the stated exclusion criterion.",
+      "created_at": "2026-10-25T00:47:55.744285+00:00"
+    },
+    {
+      "criterion_id": "C11",
+      "verdict": "met",
+      "evidence_quote": "No, I am not pregnant or breastfeeding.",
+      "note": "The candidate states they are neither pregnant nor breastfeeding.",
+      "created_at": "2026-10-25T00:48:04.243313+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "Are you between 18 and 65 years old?",
+      "created_at": "2026-10-25T00:47:25.153268+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Yes, I am 42 years old.",
+      "created_at": "2026-10-25T00:47:25.428135+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you currently receiving medication-based or psychological treatment for a sleep disorder?",
+      "created_at": "2026-10-25T00:47:29.074017+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I am not getting medicine or psychological treatment for sleep now.",
+      "created_at": "2026-10-25T00:47:30.244186+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you willing to follow the study procedures?",
+      "created_at": "2026-10-25T00:47:39.972206+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Yes, I am willing to follow all study procedures.",
+      "created_at": "2026-10-25T00:47:41.700979+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Do you work night shifts?",
+      "created_at": "2026-10-25T00:47:44.954831+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I work in daytime, not night shifts.",
+      "created_at": "2026-10-25T00:47:46.221074+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Do you use recreational drugs?",
+      "created_at": "2026-10-25T00:47:51.952984+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I do not use recreational drugs.",
+      "created_at": "2026-10-25T00:47:53.489476+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you pregnant or breastfeeding?",
+      "created_at": "2026-10-25T00:47:56.970509+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I am not pregnant or breastfeeding.",
+      "created_at": "2026-10-25T00:47:58.197347+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "This screening has paused after reaching a safety limit. Your saved answers are available for coordinator review.",
+      "created_at": "2026-10-25T00:48:04.250053+00:00"
+    }
+  ]
+}

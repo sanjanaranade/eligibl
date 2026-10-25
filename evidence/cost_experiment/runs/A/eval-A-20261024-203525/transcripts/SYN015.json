@@ -1,0 +1,103 @@
+{
+  "candidate_id": "SYN015",
+  "planned_outcome": "borderline_unclear",
+  "expected_status": "Needs review",
+  "actual_status": "Needs review",
+  "criterion_answers": [
+    {
+      "criterion_id": "C1",
+      "verdict": "unknown",
+      "evidence_quote": "I’m 34—or 43. I’m sorry, I can’t clarify which age is correct.",
+      "note": "The candidate gave two possible ages and said they cannot clarify which is correct.",
+      "created_at": "2026-10-25T00:38:25.158425+00:00"
+    },
+    {
+      "criterion_id": "C3",
+      "verdict": "unknown",
+      "evidence_quote": "I think it’s 68 kg, but I’m sorry—I’m still not completely sure.",
+      "note": "The candidate remains unsure of their reported weight after a focused follow-up, so BMI cannot be confirmed.",
+      "created_at": "2026-10-25T00:38:32.840776+00:00"
+    },
+    {
+      "criterion_id": "C4",
+      "verdict": "met",
+      "evidence_quote": "No, I’m not receiving medication-based or psychological treatment for a sleep disorder.",
+      "note": "Candidate denies both medication-based and psychological treatment for a sleep disorder.",
+      "created_at": "2026-10-25T00:38:38.364351+00:00"
+    },
+    {
+      "criterion_id": "C5",
+      "verdict": "met",
+      "evidence_quote": "Yes, I’m willing to follow all the study procedures.",
+      "note": "Confirms willingness to follow the study procedures.",
+      "created_at": "2026-10-25T00:38:43.384671+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "Are you between 18 and 65 years old?",
+      "created_at": "2026-10-25T00:38:20.197643+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m 34—or 43. I’m sorry, I can’t clarify which age is correct.",
+      "created_at": "2026-10-25T00:38:20.448690+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "What is your current height and weight? Please include units, for example, 170 cm and 68 kg or 5 ft 7 in and 150 lb.",
+      "created_at": "2026-10-25T00:38:26.593286+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m 170 cm tall and weigh 68 kg, I think. I’m sorry, I’m feeling a bit unsure.",
+      "created_at": "2026-10-25T00:38:28.131732+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Could you confirm whether your weight is 68 kg?",
+      "created_at": "2026-10-25T00:38:29.767970+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I think it’s 68 kg, but I’m sorry—I’m still not completely sure.",
+      "created_at": "2026-10-25T00:38:30.995021+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you currently receiving medication-based or psychological treatment for a sleep disorder?",
+      "created_at": "2026-10-25T00:38:34.374593+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I’m not receiving medication-based or psychological treatment for a sleep disorder.",
+      "created_at": "2026-10-25T00:38:35.914009+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you willing to follow the study procedures?",
+      "created_at": "2026-10-25T00:38:40.107135+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Yes, I’m willing to follow all the study procedures.",
+      "created_at": "2026-10-25T00:38:41.747324+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Do you work night shifts?",
+      "created_at": "2026-10-25T00:38:44.973335+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I work daytime hours, not night shifts.",
+      "created_at": "2026-10-25T00:38:46.764556+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "This screening has paused after reaching a safety limit. Your saved answers are available for coordinator review.",
+      "created_at": "2026-10-25T00:38:46.773794+00:00"
+    }
+  ]
+}

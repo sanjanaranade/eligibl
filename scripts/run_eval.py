@@ -139,16 +139,31 @@ def _write_summary(path: Path, *, run_id: str, results: list[dict[str, Any]],
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def run_evaluation(*, output_root: Path | None = None) -> Path:
+def run_evaluation(
+    *, output_root: Path | None = None, variant: str | None = None,
+    candidate_ids: list[str] | None = None,
+) -> Path:
     """Run all synthetic candidates with real simulator, screener, and verifier calls."""
     load_environment()
     if not os.getenv("PORTKEY_API_KEY", "").strip():
         raise RuntimeError("PORTKEY_API_KEY not found. Put .env in the repo or its parent folder.")
     protocol = json.loads((REPO_ROOT / "data" / "protocol.json").read_text(encoding="utf-8"))
     personas = json.loads((REPO_ROOT / "data" / "synthetic" / "candidates.json").read_text(encoding="utf-8"))
+    if variant is not None:
+        screener.cost_variant_settings(variant)
+    if candidate_ids is not None:
+        requested = set(candidate_ids)
+        available = {persona["id"] for persona in personas}
+        missing = requested - available
+        if missing:
+            raise ValueError(f"Unknown synthetic candidate IDs: {', '.join(sorted(missing))}")
+        personas = [persona for persona in personas if persona["id"] in requested]
+        if not personas:
+            raise ValueError("Select at least one candidate for evaluation.")
     with (REPO_ROOT / "data" / "synthetic" / "answer_key.csv").open(encoding="utf-8", newline="") as handle:
         answer_key = {row["candidate_id"]: row for row in csv.DictReader(handle)}
-    run_id = f"eval-{datetime.now(ZoneInfo('America/New_York')).strftime('%Y%m%d-%H%M%S')}"
+    variant_label = f"-{variant}" if variant else ""
+    run_id = f"eval{variant_label}-{datetime.now(ZoneInfo('America/New_York')).strftime('%Y%m%d-%H%M%S')}"
     run_dir = (output_root or REPO_ROOT / "evidence" / "eval") / run_id
     run_dir.mkdir(parents=True, exist_ok=False)
     transcripts_dir = run_dir / "transcripts"
@@ -158,12 +173,16 @@ def run_evaluation(*, output_root: Path | None = None) -> Path:
 
     # Keep this run's DB and JSONL audit trails separate from operational data.
     import eligibl.llm as llm
-    old_paths = (llm.DEFAULT_DATABASE, llm.USAGE_LOG_PATH, llm.SAFETY_LOG_PATH, screener.SAFETY_LOG_PATH)
+    old_paths = (
+        llm.DEFAULT_DATABASE, llm.USAGE_LOG_PATH, llm.SAFETY_LOG_PATH,
+        screener.SAFETY_LOG_PATH, screener.ACTIVE_COST_VARIANT,
+    )
     with tempfile.TemporaryDirectory(prefix="eligibl-eval-") as temp_dir:
         database = str(Path(temp_dir) / "eval.sqlite3")
         usage_path, safety_path = run_dir / "usage.jsonl", run_dir / "safety.jsonl"
         llm.DEFAULT_DATABASE, llm.USAGE_LOG_PATH, llm.SAFETY_LOG_PATH = Path(database), usage_path, safety_path
         screener.SAFETY_LOG_PATH = safety_path
+        screener.ACTIVE_COST_VARIANT = variant
         init_db(database)
         try:
             for persona in personas:
@@ -208,7 +227,10 @@ def run_evaluation(*, output_root: Path | None = None) -> Path:
                 session = get_screening_session(database, candidate_id)
                 detail = coordinator_detail(database, candidate_id)
                 if session["status"] == "completed" and not detail["verifier_summary"]:
-                    verify_screening(database, candidate_id, run_id=f"{run_id}-{source_id}-screen")
+                    verify_screening(
+                        database, candidate_id, run_id=f"{run_id}-{source_id}-screen",
+                        skip_ai_when_not_match=screener.cost_variant_settings()["skip_verifier_on_not_match"],
+                    )
                 detail = coordinator_detail(database, candidate_id)
                 expected_row = answer_key[source_id]
                 expected, actual = expected_row["expected_status"], detail["decision_label"]
@@ -254,7 +276,10 @@ def run_evaluation(*, output_root: Path | None = None) -> Path:
             _write_summary(run_dir / "summary.md", run_id=run_id, results=results,
                            simulator_usage=simulator_totals)
         finally:
-            llm.DEFAULT_DATABASE, llm.USAGE_LOG_PATH, llm.SAFETY_LOG_PATH, screener.SAFETY_LOG_PATH = old_paths
+            (
+                llm.DEFAULT_DATABASE, llm.USAGE_LOG_PATH, llm.SAFETY_LOG_PATH,
+                screener.SAFETY_LOG_PATH, screener.ACTIVE_COST_VARIANT,
+            ) = old_paths
     return run_dir
 
 
@@ -262,8 +287,10 @@ def main() -> None:
     """Run the live evaluation and print its artifact location."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-root", type=Path, help="Optional artifact root (defaults to evidence/eval).")
+    parser.add_argument("--variant", choices=("baseline", "A", "B", "C"), help="Prompt/cost experiment variant.")
+    parser.add_argument("--candidate-ids", nargs="+", help="Optional subset of synthetic persona IDs.")
     args = parser.parse_args()
-    path = run_evaluation(output_root=args.output_root)
+    path = run_evaluation(output_root=args.output_root, variant=args.variant, candidate_ids=args.candidate_ids)
     print(f"\nEvaluation artifacts: {path}")
     print((path / "summary.md").read_text(encoding="utf-8"))
 

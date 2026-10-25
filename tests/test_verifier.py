@@ -78,6 +78,38 @@ def test_model_can_only_downgrade_satisfied_answers(tmp_path, monkeypatch):
     assert answers["C5"]["verdict"] == "not_met"
 
 
+def test_optional_verifier_skip_still_checks_evidence_and_only_skips_not_matches(tmp_path, monkeypatch):
+    protocol, database = _candidate(tmp_path)
+    save_candidate_message(database, "verify-candidate", "user", "I am 17 years old.")
+    save_criterion_answer(database, "verify-candidate", "C1", "not_satisfied", "I am 17 years old", "Below minimum age.")
+    monkeypatch.setattr(
+        verifier, "call_agent",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("AI verifier should have been skipped")),
+    )
+
+    result = verifier.verify_screening(database, "verify-candidate", skip_ai_when_not_match=True)
+
+    assert result["status"] == "skipped"
+    assert "coordinator must still review" in result["summary"]
+    assert coordinator_candidates(database)[0]["decision_label"] == "Not a match"
+
+
+def test_optional_verifier_skip_does_not_skip_flagged_or_unclear_cases(tmp_path, monkeypatch):
+    _protocol, database = _candidate(tmp_path)
+    save_candidate_message(database, "verify-candidate", "user", "I am 29 years old.")
+    save_criterion_answer(database, "verify-candidate", "C1", "satisfied", "I am 29 years old", "Age stated.")
+    called = []
+    monkeypatch.setattr(
+        verifier, "call_agent",
+        lambda *_args, **_kwargs: called.append(True) or ({"summary": "Reviewed.", "downgrades": []}, {}),
+    )
+
+    result = verifier.verify_screening(database, "verify-candidate", skip_ai_when_not_match=True)
+
+    assert result["status"] == "complete"
+    assert called == [True]
+
+
 def test_injection_flag_is_a_safety_event_and_coordinator_concern(tmp_path):
     from eligibl.db import get_candidate_concerns, has_injection_flag
 

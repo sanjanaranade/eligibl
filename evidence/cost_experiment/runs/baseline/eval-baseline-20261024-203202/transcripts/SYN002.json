@@ -1,0 +1,66 @@
+{
+  "candidate_id": "SYN002",
+  "planned_outcome": "clearly_eligible",
+  "expected_status": "Likely eligible",
+  "actual_status": "Needs review",
+  "criterion_answers": [
+    {
+      "criterion_id": "C1",
+      "verdict": "met",
+      "evidence_quote": "Yes, I’m 36 years old.",
+      "note": "Candidate reports being 36, within the required 18–65 age range.",
+      "created_at": "2026-10-25T00:32:22.221999+00:00"
+    },
+    {
+      "criterion_id": "C3",
+      "verdict": "met",
+      "evidence_quote": "I’m 170 cm tall and weigh 68 kg.",
+      "note": "BMI calculated as 23.5 kg/m², within the required range.",
+      "created_at": "2026-10-25T00:32:29.901562+00:00"
+    },
+    {
+      "criterion_id": "C4",
+      "verdict": "met",
+      "evidence_quote": "No, I’m not receiving medication-based or psychological treatment for a sleep disorder.",
+      "note": "Candidate denies both types of current active sleep-disorder treatment.",
+      "created_at": "2026-10-25T00:32:35.330864+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "Are you between 18 and 65 years old?",
+      "created_at": "2026-10-25T00:32:20.178790+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Yes, I’m 36 years old.",
+      "created_at": "2026-10-25T00:32:20.474211+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "What is your current height and weight? Please include units—for example, 170 cm and 68 kg, or 5 ft 7 in and 150 lb. If you do not know, say so.",
+      "created_at": "2026-10-25T00:32:23.659846+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m 170 cm tall and weigh 68 kg.",
+      "created_at": "2026-10-25T00:32:25.088285+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you currently receiving medication-based or psychological treatment for a sleep disorder?",
+      "created_at": "2026-10-25T00:32:31.438912+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I’m not receiving medication-based or psychological treatment for a sleep disorder.",
+      "created_at": "2026-10-25T00:32:32.973732+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "This screening has paused after reaching a safety limit. Your saved answers are available for coordinator review.",
+      "created_at": "2026-10-25T00:32:35.337538+00:00"
+    }
+  ]
+}

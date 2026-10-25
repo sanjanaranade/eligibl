@@ -36,6 +36,7 @@ from .db import (
 DEFAULT_DATABASE = REPO_ROOT / "data" / "eligibl.sqlite3"
 USAGE_LOG_PATH = REPO_ROOT / "logs" / "usage.jsonl"
 SAFETY_LOG_PATH = REPO_ROOT / "logs" / "safety.jsonl"
+COST_EXPERIMENT_SPEND_GUARD: Any = None
 _SECRET_PATTERN = re.compile(r"(?i)(portkey_api_key|api[_ -]?key|access[_ -]?token|secret|bearer)\s*[:=]\s*[^\s,;]+")
 
 
@@ -294,6 +295,18 @@ def _preflight(
 
     current = usage_totals_today(database, limits["timezone"])
     projected_cost = compute_cost_usd(estimated_input, 0, max_output, pricing)
+    if COST_EXPERIMENT_SPEND_GUARD is not None:
+        # Reserve extra estimated headroom so an estimation mismatch cannot
+        # consume the experiment's entire cap on the final model request.
+        reserved_cost = projected_cost * 1.5
+        reserved_total = COST_EXPERIMENT_SPEND_GUARD.spent_usd + reserved_cost
+        if reserved_total > COST_EXPERIMENT_SPEND_GUARD.limit_usd:
+            reject(
+                "cost_experiment_usd",
+                "The cost experiment reached its guarded spend ceiling; no further model call was made.",
+                reserved_total,
+                COST_EXPERIMENT_SPEND_GUARD.limit_usd,
+            )
     projected_daily = float(current["cost_usd"]) + projected_cost
     daily_limit = float(limits["daily_budget_usd"])
     if projected_daily > daily_limit:
@@ -448,9 +461,12 @@ def call_agent(
             )
             for key, token_key in (("input", "input"), ("cached_input", "cached_input"), ("output", "output")):
                 aggregate[key] += current_usage[token_key]
-            aggregate["cost_usd"] += compute_cost_usd(
+            actual_call_cost = compute_cost_usd(
                 current_usage["input"], current_usage["cached_input"], current_usage["output"], pricing
             )
+            aggregate["cost_usd"] += actual_call_cost
+            if COST_EXPERIMENT_SPEND_GUARD is not None:
+                COST_EXPERIMENT_SPEND_GUARD.spent_usd += actual_call_cost
             aggregate["latency_ms"] += latency
             aggregate["calls"] += 1
             aggregate["attempts"] += attempts

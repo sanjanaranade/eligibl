@@ -257,6 +257,26 @@ def test_malformed_tool_arguments_are_not_executed_and_agent_can_retry(tmp_path,
     assert json.loads(client.responses.requests[1]["input"][3]["output"])["error"]
 
 
+def test_optional_experiment_spend_guard_blocks_before_provider_call(tmp_path, monkeypatch):
+    _database, _usage_log, safety_log = configure_test_paths(tmp_path, monkeypatch)
+    client = FakeClient([response()])
+    monkeypatch.setattr(llm, "create_client", lambda: client)
+    monkeypatch.setattr(
+        llm, "COST_EXPERIMENT_SPEND_GUARD",
+        SimpleNamespace(spent_usd=0.0, limit_usd=0.0000001),
+    )
+
+    with pytest.raises(BudgetExceeded, match="experiment reached its guarded spend ceiling"):
+        llm.call_agent(
+            "budget_guard_test",
+            [{"role": "system", "content": "Fixed."}, {"role": "user", "content": "Reply."}],
+        )
+
+    assert client.responses.requests == []
+    event = json.loads(safety_log.read_text(encoding="utf-8").splitlines()[0])
+    assert event["limit"] == "cost_experiment_usd"
+
+
 def test_screening_message_limit_logs_safety_and_blocks_api(tmp_path, monkeypatch):
     database, _, safety_log = configure_test_paths(tmp_path, monkeypatch)
     client = FakeClient([response()])

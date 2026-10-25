@@ -9,6 +9,7 @@ from typing import Any
 
 from .. import db
 from ..config import REPO_ROOT
+from ..decision import classify_candidate
 from ..llm import call_agent, compose_messages
 
 
@@ -60,7 +61,8 @@ def quote_in_transcript(quote: str, user_messages: list[str], threshold: float =
 
 
 def verify_screening(
-    database: str, candidate_id: str, *, run_id: str | None = None
+    database: str, candidate_id: str, *, run_id: str | None = None,
+    skip_ai_when_not_match: bool = False,
 ) -> dict[str, Any]:
     """Check quote provenance in code, then ask the model only for downgrades and a summary."""
     session = db.get_screening_session(database, candidate_id)
@@ -84,6 +86,25 @@ def verify_screening(
             )
 
     answers = db.get_criterion_answers(database, candidate_id)
+    if skip_ai_when_not_match:
+        preliminary = classify_candidate(
+            answers,
+            concerns=db.get_candidate_concerns(database, candidate_id),
+            injection_flag=db.has_injection_flag(database, candidate_id),
+            required_criteria=[
+                criterion["id"] for criterion in session["protocol"]["criteria"]
+                if not criterion["requires_clinic_check"]
+            ],
+            verification_complete=False,
+        )
+        if preliminary == "Not a match":
+            summary = (
+                "AI verifier skipped: a code-checked chat criterion was not met. "
+                "The coordinator must still review the evidence and decision."
+            )
+            db.save_verification(database, candidate_id, summary, "complete")
+            return {"summary": summary, "downgrades": [], "status": "skipped"}
+
     payload = {
         "candidate_messages": candidate_messages,
         "criteria_and_recorded_verdicts": [

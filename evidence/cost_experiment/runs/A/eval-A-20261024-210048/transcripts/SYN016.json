@@ -1,0 +1,110 @@
+{
+  "candidate_id": "SYN016",
+  "planned_outcome": "borderline_unclear",
+  "expected_status": "Needs review",
+  "actual_status": "Needs review",
+  "criterion_answers": [
+    {
+      "criterion_id": "C1",
+      "verdict": "met",
+      "evidence_quote": "Yes, I am 45 years old.",
+      "note": "Candidate reports age 45, within the required 18–65 range.",
+      "created_at": "2026-10-25T01:06:01.975332+00:00"
+    },
+    {
+      "criterion_id": "C3",
+      "verdict": "unknown",
+      "evidence_quote": "I am 170 cm and 52.02 kg, so my BMI is 18.0. I do not know the rule for exactly at the cutoff.",
+      "note": "BMI is exactly 18.0, and the protocol does not specify whether the boundary is included.",
+      "created_at": "2026-10-25T01:06:07.699880+00:00"
+    },
+    {
+      "criterion_id": "C4",
+      "verdict": "met",
+      "evidence_quote": "I am not receiving medication-based or psychological treatment for a sleep disorder.",
+      "note": "The candidate denies currently receiving either medication-based or psychological treatment for a sleep disorder.",
+      "created_at": "2026-10-25T01:06:17.165511+00:00"
+    },
+    {
+      "criterion_id": "C5",
+      "verdict": "met",
+      "evidence_quote": "Yes, I am willing to follow all study procedures.",
+      "note": "Clearly states willingness to follow all study procedures.",
+      "created_at": "2026-10-25T01:06:23.942578+00:00"
+    },
+    {
+      "criterion_id": "C8",
+      "verdict": "met",
+      "evidence_quote": "No, I work daytime, not night shifts.",
+      "note": "Candidate reports they do not work night shifts.",
+      "created_at": "2026-10-25T01:06:28.820777+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "Are you between 18 and 65 years old?",
+      "created_at": "2026-10-25T01:05:59.862576+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Yes, I am 45 years old.",
+      "created_at": "2026-10-25T01:06:00.167371+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "What is your current height and weight? Please include units—for example, 170 cm and 68 kg, or 5 ft 7 in and 150 lb. If you do not know, say so.",
+      "created_at": "2026-10-25T01:06:03.351035+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I am 170 cm and 52.02 kg, so my BMI is 18.0. I do not know the rule for exactly at the cutoff.",
+      "created_at": "2026-10-25T01:06:03.718855+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you currently receiving medication-based or psychological treatment for a sleep disorder?",
+      "created_at": "2026-10-25T01:06:12.314279+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I am not receiving medication-based or psychological treatment for a sleep disorder.",
+      "created_at": "2026-10-25T01:06:12.634191+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you willing to follow the study procedures?",
+      "created_at": "2026-10-25T01:06:18.261808+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Yes, I am willing to follow all study procedures.",
+      "created_at": "2026-10-25T01:06:19.513665+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Do you work night shifts?",
+      "created_at": "2026-10-25T01:06:25.176821+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I work daytime, not night shifts.",
+      "created_at": "2026-10-25T01:06:26.726878+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Do you use recreational drugs?",
+      "created_at": "2026-10-25T01:06:30.035410+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I do not use recreational drugs.",
+      "created_at": "2026-10-25T01:06:31.260575+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "This screening has paused after reaching a safety limit. Your saved answers are available for coordinator review.",
+      "created_at": "2026-10-25T01:06:33.038908+00:00"
+    }
+  ]
+}

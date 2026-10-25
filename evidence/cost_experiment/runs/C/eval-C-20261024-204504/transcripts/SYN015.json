@@ -1,0 +1,110 @@
+{
+  "candidate_id": "SYN015",
+  "planned_outcome": "borderline_unclear",
+  "expected_status": "Needs review",
+  "actual_status": "Needs review",
+  "criterion_answers": [
+    {
+      "criterion_id": "C1",
+      "verdict": "unknown",
+      "evidence_quote": "I’m 34—or 43. I’m sorry, I can’t clarify which age is correct.",
+      "note": "Age is inconsistent and the candidate cannot clarify.",
+      "created_at": "2026-10-25T00:49:15.307108+00:00"
+    },
+    {
+      "criterion_id": "C4",
+      "verdict": "met",
+      "evidence_quote": "I’m not receiving medication-based or psychological treatment for a sleep disorder.",
+      "note": "Candidate denies current medication-based or psychological sleep-disorder treatment.",
+      "created_at": "2026-10-25T00:49:20.735820+00:00"
+    },
+    {
+      "criterion_id": "C5",
+      "verdict": "met",
+      "evidence_quote": "Yes, I’m willing to follow all the study procedures.",
+      "note": "Confirms willingness to follow study procedures.",
+      "created_at": "2026-10-25T00:49:28.720638+00:00"
+    },
+    {
+      "criterion_id": "C8",
+      "verdict": "met",
+      "evidence_quote": "No, I work daytime hours, not night shifts.",
+      "note": "Candidate explicitly says they work daytime hours and not night shifts.",
+      "created_at": "2026-10-25T00:49:34.149424+00:00"
+    },
+    {
+      "criterion_id": "C10",
+      "verdict": "met",
+      "evidence_quote": "No, I don’t use recreational drugs.",
+      "note": "Candidate denies recreational drug use, meeting the requirement not to use recreational drugs.",
+      "created_at": "2026-10-25T00:49:42.340757+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "Are you between 18 and 65 years old?",
+      "created_at": "2026-10-25T00:49:12.991501+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m 34—or 43. I’m sorry, I can’t clarify which age is correct.",
+      "created_at": "2026-10-25T00:49:13.250148+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you currently receiving medication-based or psychological treatment for a sleep disorder?",
+      "created_at": "2026-10-25T00:49:16.947052+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m not receiving medication-based or psychological treatment for a sleep disorder.",
+      "created_at": "2026-10-25T00:49:18.587353+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you willing to follow the study procedures?",
+      "created_at": "2026-10-25T00:49:22.066964+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Yes, I’m willing to follow all the study procedures.",
+      "created_at": "2026-10-25T00:49:23.907529+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Do you work night shifts?",
+      "created_at": "2026-10-25T00:49:30.359228+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I work daytime hours, not night shifts.",
+      "created_at": "2026-10-25T00:49:32.098436+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Do you use recreational drugs?",
+      "created_at": "2026-10-25T00:49:35.790660+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I don’t use recreational drugs.",
+      "created_at": "2026-10-25T00:49:37.222618+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you pregnant or breastfeeding?",
+      "created_at": "2026-10-25T00:49:43.775128+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I’m neither pregnant nor breastfeeding.",
+      "created_at": "2026-10-25T00:49:45.046500+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "This screening has paused after reaching a safety limit. Your saved answers are available for coordinator review.",
+      "created_at": "2026-10-25T00:49:46.747974+00:00"
+    }
+  ]
+}

@@ -1,0 +1,127 @@
+{
+  "candidate_id": "SYN017",
+  "planned_outcome": "borderline_unclear",
+  "expected_status": "Needs review",
+  "actual_status": "Needs review",
+  "criterion_answers": [
+    {
+      "criterion_id": "C1",
+      "verdict": "met",
+      "evidence_quote": "Yes, I’m 38.",
+      "note": "Candidate reports age 38, within the required 18–65 range.",
+      "created_at": "2026-10-25T01:16:05.609074+00:00"
+    },
+    {
+      "criterion_id": "C3",
+      "verdict": "met",
+      "evidence_quote": "I’m 170 cm tall and weigh 68 kg.",
+      "note": "BMI calculated as 23.5 kg/m², within the required range.",
+      "created_at": "2026-10-25T01:16:06.648640+00:00"
+    },
+    {
+      "criterion_id": "C4",
+      "verdict": "met",
+      "evidence_quote": "My CBT-I has ended, but I’m not sure whether the treatment is still considered active.",
+      "note": "Candidate reports CBT-I has ended, indicating they are not currently receiving treatment.",
+      "created_at": "2026-10-25T01:16:08.183714+00:00"
+    },
+    {
+      "criterion_id": "C5",
+      "verdict": "met",
+      "evidence_quote": "Yes, I’m willing to follow all study procedures.",
+      "note": "Candidate explicitly states willingness to follow all study procedures.",
+      "created_at": "2026-10-25T01:16:09.167191+00:00"
+    },
+    {
+      "criterion_id": "C8",
+      "verdict": "met",
+      "evidence_quote": "No, I work daytime hours, not night shifts.",
+      "note": "Reports daytime work and no night shifts.",
+      "created_at": "2026-10-25T01:16:10.581602+00:00"
+    },
+    {
+      "criterion_id": "C10",
+      "verdict": "met",
+      "evidence_quote": "No, I don’t use recreational drugs.",
+      "note": "Candidate denies recreational drug use, meeting the requirement not to use them.",
+      "created_at": "2026-10-25T01:16:11.538476+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "Are you between 18 and 65 years old?",
+      "created_at": "2026-10-25T01:16:04.937469+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Yes, I’m 38.",
+      "created_at": "2026-10-25T01:16:05.250327+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "What is your current height and weight? Please include units—for example, 170 cm and 68 kg, or 5 ft 7 in and 150 lb. If you do not know, say so.",
+      "created_at": "2026-10-25T01:16:05.828018+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m 170 cm tall and weigh 68 kg.",
+      "created_at": "2026-10-25T01:16:06.083593+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you currently receiving medication-based or psychological treatment for a sleep disorder?",
+      "created_at": "2026-10-25T01:16:06.849011+00:00"
+    },
+    {
+      "role": "user",
+      "content": "My CBT-I ended recently, but I can’t tell whether the treatment is still active.",
+      "created_at": "2026-10-25T01:16:07.139826+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you still receiving CBT-I sessions or other treatment for a sleep disorder, or has that treatment ended?",
+      "created_at": "2026-10-25T01:16:07.573769+00:00"
+    },
+    {
+      "role": "user",
+      "content": "My CBT-I has ended, but I’m not sure whether the treatment is still considered active.",
+      "created_at": "2026-10-25T01:16:07.878309+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you willing to follow the study procedures?",
+      "created_at": "2026-10-25T01:16:08.416345+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Yes, I’m willing to follow all study procedures.",
+      "created_at": "2026-10-25T01:16:08.691685+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Do you work night shifts?",
+      "created_at": "2026-10-25T01:16:09.618660+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I work daytime hours, not night shifts.",
+      "created_at": "2026-10-25T01:16:10.032993+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Do you use recreational drugs?",
+      "created_at": "2026-10-25T01:16:10.795441+00:00"
+    },
+    {
+      "role": "user",
+      "content": "No, I don’t use recreational drugs.",
+      "created_at": "2026-10-25T01:16:11.259720+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "This screening has paused after reaching a safety limit. Your saved answers are available for coordinator review.",
+      "created_at": "2026-10-25T01:16:11.545430+00:00"
+    }
+  ]
+}

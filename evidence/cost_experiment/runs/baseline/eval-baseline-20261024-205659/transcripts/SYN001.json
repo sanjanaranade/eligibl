@@ -1,0 +1,76 @@
+{
+  "candidate_id": "SYN001",
+  "planned_outcome": "clearly_eligible",
+  "expected_status": "Likely eligible",
+  "actual_status": "Needs review",
+  "criterion_answers": [
+    {
+      "criterion_id": "C1",
+      "verdict": "met",
+      "evidence_quote": "Yes, I’m 29.",
+      "note": "Candidate reports being 29, within the required 18–65 age range.",
+      "created_at": "2026-10-25T00:57:03.696920+00:00"
+    },
+    {
+      "criterion_id": "C3",
+      "verdict": "met",
+      "evidence_quote": "I’m 170 cm and 68 kg.",
+      "note": "Calculated BMI is 23.5 kg/m², within the required range.",
+      "created_at": "2026-10-25T00:57:09.304538+00:00"
+    },
+    {
+      "criterion_id": "C4",
+      "verdict": "met",
+      "evidence_quote": "I’m not receiving medication-based or psychological treatment for a sleep disorder.",
+      "note": "Candidate denies both forms of active sleep-disorder treatment.",
+      "created_at": "2026-10-25T00:57:13.477491+00:00"
+    }
+  ],
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "Are you between 18 and 65 years old?",
+      "created_at": "2026-10-25T00:57:01.538561+00:00"
+    },
+    {
+      "role": "user",
+      "content": "Yes, I’m 29.",
+      "created_at": "2026-10-25T00:57:01.811483+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "What are your current height and weight? Please include units, such as 170 cm and 68 kg or 5 ft 7 in and 150 lb.",
+      "created_at": "2026-10-25T00:57:05.130629+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m 170 cm and 68 kg.",
+      "created_at": "2026-10-25T00:57:05.537120+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you currently receiving medication-based or psychological treatment for a sleep disorder?",
+      "created_at": "2026-10-25T00:57:11.041690+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m not receiving medication-based or psychological treatment for a sleep disorder.",
+      "created_at": "2026-10-25T00:57:11.373888+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "Are you willing to follow the study procedures?",
+      "created_at": "2026-10-25T00:57:14.569998+00:00"
+    },
+    {
+      "role": "user",
+      "content": "I’m willing to follow all study procedures.",
+      "created_at": "2026-10-25T00:57:14.887705+00:00"
+    },
+    {
+      "role": "assistant",
+      "content": "This screening has paused after reaching a safety limit. Your saved answers are available for coordinator review.",
+      "created_at": "2026-10-25T00:57:14.895547+00:00"
+    }
+  ]
+}
