@@ -86,7 +86,40 @@ def test_recording_last_chat_criterion_completes_deterministically(tmp_path):
     )
 
     assert result["_agent_turn_complete"] is True
+    assert result["_assistant_message"].startswith("Thanks, Alex.")
     assert get_screening_session(database, "terminal-test")["status"] == "completed"
+
+
+def test_initial_question_comes_from_protocol_without_second_model_turn(tmp_path):
+    protocol = json.loads((REPO_ROOT / "data" / "protocol.json").read_text(encoding="utf-8"))
+    database = str(tmp_path / "initial-question.db")
+    init_db(database)
+    create_candidate_screening(database, "initial-test", "Alex", protocol)
+
+    result = screener._initial_question(database, "initial-test", protocol)
+
+    assert result["_agent_turn_complete"] is True
+    assert result["_assistant_message"].startswith("Hi Alex, let's check a few things.")
+    assert result["_assistant_message"].endswith(screener.chat_criteria(protocol)[0]["screening_question"])
+
+
+def test_recorded_answer_returns_next_trusted_protocol_question(tmp_path):
+    protocol = json.loads((REPO_ROOT / "data" / "protocol.json").read_text(encoding="utf-8"))
+    database = str(tmp_path / "next-question.db")
+    init_db(database)
+    create_candidate_screening(database, "next-test", "Alex", protocol)
+    criteria = screener.chat_criteria(protocol)
+    first = criteria[0]
+    next_item = criteria[1]
+
+    result = screener._record_answer(
+        database, "next-test", protocol, "I am 29.", first["id"], "satisfied", "I am 29.", "Age reported."
+    )
+
+    assert result["recorded"] is True
+    assert result["_agent_turn_complete"] is True
+    assert result["_assistant_message"] == f"Thank you. {next_item['screening_question']}"
+    assert result["next_criterion"]["id"] == next_item["id"]
 
 
 def test_record_answer_requires_exact_quote_from_latest_candidate_message(tmp_path):

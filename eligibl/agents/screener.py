@@ -102,7 +102,7 @@ def _tools_for_candidate(
             "description": "Get this candidate's earliest chat-checkable criterion without a recorded answer.",
             "parameters": {"type": "object", "properties": {}, "required": [], "additionalProperties": False},
         },
-        "handler": lambda: _get_next(database, candidate_id, protocol),
+        "handler": lambda: _initial_question(database, candidate_id, protocol),
     }
     record = {
         "schema": {
@@ -160,6 +160,19 @@ def _get_next(database: str, candidate_id: str, protocol: dict[str, Any]) -> dic
     return {"criterion": None, "progress": {"number": len(criteria), "total": len(criteria)}}
 
 
+def _initial_question(database: str, candidate_id: str, protocol: dict[str, Any]) -> dict[str, Any]:
+    """Return the opening question directly from trusted protocol data."""
+    result = _get_next(database, candidate_id, protocol)
+    criterion = result["criterion"]
+    if criterion is None:
+        return {"_agent_turn_complete": True, "_assistant_message": ""}
+    name = db.get_screening_session(database, candidate_id)["display_name"]
+    return {
+        "_agent_turn_complete": True,
+        "_assistant_message": f"Hi {name}, let's check a few things. {criterion['screening_question']}",
+    }
+
+
 def _record_answer(
     database: str,
     candidate_id: str,
@@ -186,12 +199,19 @@ def _record_answer(
         "next_criterion": next_result["criterion"],
         "progress": next_result["progress"],
     }
+    session = db.get_screening_session(database, candidate_id)
     if next_result["criterion"] is None:
         # Completion is a deterministic state transition. Avoid spending an
         # additional model loop merely to say goodbye after the last answer.
         _finish_if_done(database, candidate_id, protocol)
         result["_agent_turn_complete"] = True
-        result["_assistant_message"] = ""
+        result["_assistant_message"] = _completion_text(session["display_name"])
+    else:
+        # This path is reached only when the model has enough evidence to
+        # record a verdict. Use the next trusted protocol question directly,
+        # avoiding another API round-trip to restate fixed checklist text.
+        result["_agent_turn_complete"] = True
+        result["_assistant_message"] = f"Thank you. {next_result['criterion']['screening_question']}"
     return result
 
 
