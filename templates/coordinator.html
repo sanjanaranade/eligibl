@@ -4,7 +4,8 @@
 {% block content %}
 <div class="coordinator-app">
   <aside class="coord-sidebar">
-    <a class="coord-brand" href="{{ url_for('main.coordinator') }}"><img src="{{ url_for('static', filename='img/eligibl-logo.svg') }}" alt="eligibl"><span>STUDY TEAM</span></a>
+    <a class="coord-brand" href="{{ url_for('main.index') }}" aria-label="Eligibl home"><img src="{{ url_for('static', filename='img/eligibl-logo.svg') }}" alt="eligibl"><span>STUDY TEAM</span></a>
+    {% include "_study_picker.html" %}
     <nav aria-label="Coordinator navigation">
       <a class="active" href="{{ url_for('main.coordinator') }}"><span class="nav-icon">⌂</span><span>Dashboard</span></a>
       <a href="#candidate-list"><span class="nav-icon">◉</span><span>Candidates</span></a>

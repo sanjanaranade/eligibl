@@ -2,7 +2,7 @@
 {% block title %}Candidate screening — Eligibl{% endblock %}
 {% block content %}
   <section class="screening-shell" data-screening-app>
-    <header class="screen-brandline"><a href="{{ url_for('main.index') }}"><img src="{{ url_for('static', filename='img/eligibl-logo.svg') }}" alt="eligibl"></a><span class="screen-study-name">{{ protocol.study_title if protocol else 'Study screening' }}</span><a class="screen-switch-link" href="{{ url_for('main.coordinator') }}">Coordinator workspace <span aria-hidden="true">↗</span></a></header>
+    <header class="screen-brandline"><a href="{{ url_for('main.index') }}" aria-label="Eligibl home"><img src="{{ url_for('static', filename='img/eligibl-logo.svg') }}" alt="eligibl"></a>{% include "_study_picker.html" %}<a class="screen-switch-link" href="{{ url_for('main.coordinator') }}">Coordinator workspace <span aria-hidden="true">↗</span></a></header>
     <p class="eyebrow">A calm first step · Demo</p>
     <h1>Let's check a few things</h1>
     {% if protocol_error %}<p class="notice" role="alert">{{ protocol_error }}</p>{% endif %}
@@ -59,6 +59,7 @@
         <li>Taking part is always your choice.</li>
       </ol>
       <p class="synthetic-reminder">This is a synthetic demo. It does not send email or contact anyone.</p>
+      <button class="screen-button reset-screening-button" id="start-another-screening" type="button">Start another demo screening</button>
       <a class="chat-exit" href="{{ url_for('main.index') }}">Return to welcome</a>
     </section>
   </section>

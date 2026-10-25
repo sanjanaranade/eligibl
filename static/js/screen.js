@@ -147,6 +147,22 @@
     event.preventDefault();
     sendMessage(textArea.value);
   });
+  document.getElementById("start-another-screening").addEventListener("click", () => {
+    window.localStorage.removeItem(sessionKey);
+    candidateId = null;
+    document.getElementById("screening-start-form").reset();
+    document.getElementById("screening-start-form").querySelector("button[type=submit]").disabled = false;
+    document.getElementById("start-error").hidden = true;
+    document.getElementById("chat-error").hidden = true;
+    document.getElementById("safety-notice").hidden = true;
+    textArea.disabled = false;
+    sendButton.disabled = false;
+    messages.replaceChildren();
+    intro.hidden = false;
+    chat.hidden = true;
+    complete.hidden = true;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
   textArea.addEventListener("input", () => {
     count.textContent = `${textArea.value.length} / 800`;
   });

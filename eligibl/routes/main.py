@@ -40,9 +40,17 @@ SAFETY_LOG_PATH = REPO_ROOT / "logs" / "safety.jsonl"
 
 
 @main_bp.app_context_processor
-def common_template_context() -> dict[str, bool]:
-    """Provide key status to templates without exposing the key value."""
-    return {"has_api_key": api_key_found()}
+def common_template_context() -> dict[str, object]:
+    """Provide safe shared app and active-study metadata to templates."""
+    try:
+        study = json.loads((REPO_ROOT / "data" / "protocol.json").read_text(encoding="utf-8"))
+        active_study = {
+            "study_title": str(study.get("study_title", "Study information unavailable")),
+            "nct_id": str(study.get("nct_id", "")),
+        }
+    except (OSError, json.JSONDecodeError):
+        active_study = None
+    return {"has_api_key": api_key_found(), "active_study": active_study}
 
 
 @main_bp.get("/")

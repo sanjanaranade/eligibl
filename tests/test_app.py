@@ -10,6 +10,10 @@ def test_homepage_has_two_entry_cards_and_synthetic_footer(tmp_path):
     assert response.status_code == 200
     assert b"I'm a coordinator" in response.data
     assert b"I'm here to be screened" in response.data
+    assert b"Explore a study." in response.data
+    assert b"participants" in response.data.lower()
+    assert b'class="welcome-brand" href="/"' in response.data
+    assert b"a clearer path for everyone" in response.data.lower()
     assert b"Demo \xc2\xb7 synthetic data only" in response.data
 
 
@@ -41,6 +45,10 @@ def test_all_initial_pages_include_synthetic_footer(tmp_path):
     assert b"maxlength=\"800\"" in screen_page.data
     assert b"Coordinator workspace" in screen_page.data
     assert b'href="/coordinator"' in screen_page.data
+    assert b'class="screen-brandline"' in screen_page.data
+    assert b"Current study" in screen_page.data
+    assert b"NCT07497698" in screen_page.data
+    assert b"Start another demo screening" in screen_page.data
 
 
 def test_coordinator_dashboard_and_safety_pages_render_with_navigation(tmp_path):
@@ -57,6 +65,9 @@ def test_coordinator_dashboard_and_safety_pages_render_with_navigation(tmp_path)
         if path == "/coordinator":
             assert response.data.count(b'class="view-switch"') == 1
             assert b"coord-header-actions" not in response.data
+        assert b'class="coord-brand" href="/"' in response.data
+        assert b"Current study" in response.data
+        assert b"NCT07497698" in response.data
 
 
 def test_coordinator_detail_and_reason_required_override(tmp_path):

@@ -1,0 +1,15 @@
+{% if active_study %}
+<details class="study-picker {{ 'study-picker-screen' if request.endpoint == 'main.screen' else 'study-picker-sidebar' }}">
+  <summary aria-label="View the currently selected study">
+    <span class="study-picker-kicker">Current study</span>
+    <span class="study-picker-title">{{ active_study.study_title }}</span>
+    <span class="study-picker-chevron" aria-hidden="true">⌄</span>
+  </summary>
+  <div class="study-picker-panel">
+    <span class="study-picker-kicker">Currently viewing</span>
+    <strong>{{ active_study.study_title }}</strong>
+    {% if active_study.nct_id %}<span class="study-picker-id">{{ active_study.nct_id }}</span>{% endif %}
+    <p>This demo currently has one study loaded. This control shows which study is active.</p>
+  </div>
+</details>
+{% endif %}
