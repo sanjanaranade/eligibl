@@ -67,7 +67,7 @@ def coordinator():
         "coordinator.html", candidates=candidates, usage=usage,
         budget=limits["daily_budget_usd"], analytics=stats,
         study_title=study_title,
-        budget_pause=daily_budget_blocked_today(current_app.config["DATABASE"], limits["timezone"]),
+        budget_pause=daily_budget_blocked_today(current_app.config["DATABASE"], limits["timezone"], limits["daily_budget_usd"]),
     )
 
 
@@ -264,9 +264,9 @@ def start_screening():
         return jsonify(error="Please confirm the demo consent statement before continuing."), 400
     if not api_key_found():
         return jsonify(error="Screening needs PORTKEY_API_KEY in .env in this project folder or its parent."), 503
-    if daily_budget_blocked_today(current_app.config["DATABASE"], load_limits()["timezone"]):
-        return jsonify(error="Screening is paused for today. Please try again tomorrow.", safety_pause=True), 429
     limits = load_limits()
+    if daily_budget_blocked_today(current_app.config["DATABASE"], limits["timezone"], limits["daily_budget_usd"]):
+        return jsonify(error="Screening is paused for today. Please try again tomorrow.", safety_pause=True), 429
     if not consume_screening_rate_limit(
         current_app.config["DATABASE"], kind="start", candidate_id=None, ip_hash=_ip_fingerprint(),
         interval_seconds=int(limits["message_interval_seconds"]),
@@ -310,7 +310,7 @@ def resume_screening(candidate_id: str):
         question_number=min(len(answered) + 1, len(criteria)),
         question_total=len(criteria),
         quick_replies=screener.quick_replies(current, last_assistant),
-        budget_paused=daily_budget_blocked_today(current_app.config["DATABASE"], load_limits()["timezone"]),
+        budget_paused=daily_budget_blocked_today(current_app.config["DATABASE"], load_limits()["timezone"], load_limits()["daily_budget_usd"]),
     )
 
 

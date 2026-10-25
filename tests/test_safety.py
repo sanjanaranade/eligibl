@@ -127,6 +127,40 @@ def test_daily_budget_message_is_candidate_facing_and_dashboard_banner_shows(tmp
     assert b"View safety log" in page.data
 
 
+def test_mirrored_low_test_budget_does_not_pause_the_live_two_dollar_budget(tmp_path):
+    database = str(tmp_path / "mirrored-budget.db")
+    init_db(database)
+    record_safety_event(
+        database, tmp_path / "safety.jsonl", event="budget_limit_blocked",
+        limit_name="daily_budget_usd",
+        details={"detail": "Synthetic low-budget test", "observed": 0.0014, "maximum": 0.001},
+    )
+
+    assert daily_budget_blocked_today(database, "America/New_York", 2.0) is False
+
+
+def test_low_budget_safety_fixture_does_not_block_real_candidate_start(tmp_path, monkeypatch):
+    from eligibl.routes import main
+
+    database = str(tmp_path / "mirrored-budget-start.db")
+    app = create_app({"TESTING": True, "DATABASE": database})
+    record_safety_event(
+        database, tmp_path / "safety.jsonl", event="budget_limit_blocked",
+        limit_name="daily_budget_usd",
+        details={"detail": "Synthetic low-budget test", "observed": 0.0014, "maximum": 0.001},
+    )
+    monkeypatch.setattr(main, "api_key_found", lambda: True)
+    monkeypatch.setattr(main, "consume_screening_rate_limit", lambda *args, **kwargs: True)
+    monkeypatch.setattr(main.screener, "start_screening", lambda *args, **kwargs: {"candidate_id": "synthetic-start"})
+
+    response = app.test_client().post(
+        "/api/screen/start", json={"first_name": "Demo", "consent": True},
+    )
+
+    assert response.status_code == 200
+    assert response.json["candidate_id"] == "synthetic-start"
+
+
 def test_agent_concern_tool_flags_session_for_human_review(tmp_path, monkeypatch):
     protocol = json.loads((REPO_ROOT / "data" / "protocol.json").read_text(encoding="utf-8"))
     database = str(tmp_path / "concern.db")

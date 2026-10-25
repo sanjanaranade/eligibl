@@ -39,6 +39,8 @@ def test_all_initial_pages_include_synthetic_footer(tmp_path):
     screen_page = client.get("/screen")
     assert b"I'm using a made-up persona for this demo" in screen_page.data
     assert b"maxlength=\"800\"" in screen_page.data
+    assert b"Coordinator workspace" in screen_page.data
+    assert b'href="/coordinator"' in screen_page.data
 
 
 def test_coordinator_dashboard_and_safety_pages_render_with_navigation(tmp_path):
@@ -50,6 +52,8 @@ def test_coordinator_dashboard_and_safety_pages_render_with_navigation(tmp_path)
         assert response.status_code == 200
         assert marker in response.data
         assert b"Demo \xc2\xb7 synthetic data only" in response.data
+        assert b"Participant preview" in response.data
+        assert b'href="/screen"' in response.data
 
 
 def test_coordinator_detail_and_reason_required_override(tmp_path):

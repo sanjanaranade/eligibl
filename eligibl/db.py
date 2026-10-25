@@ -600,18 +600,36 @@ def safety_event_counts(database: str | Path) -> list[dict[str, Any]]:
     return [dict(row) for row in rows]
 
 
-def daily_budget_blocked_today(database: str | Path, timezone_name: str) -> bool:
-    """Check whether the daily budget stopped a call during the configured local day."""
+def daily_budget_blocked_today(
+    database: str | Path, timezone_name: str, daily_budget_usd: float | None = None,
+) -> bool:
+    """Check whether today's active daily-budget limit blocked a model call.
+
+    Budget-limit events from isolated test configurations are mirrored into the
+    audit table too. When the active cap is known, ignore those events if their
+    recorded maximum belongs to a different cap (for example, a $0.001 test).
+    """
     zone = ZoneInfo(timezone_name)
     local_now = datetime.now(zone)
     midnight = datetime.combine(local_now.date(), datetime_time.min, tzinfo=zone)
     start = midnight.astimezone(UTC).isoformat()
     end = (midnight + timedelta(days=1)).astimezone(UTC).isoformat()
     with session(database) as connection:
-        return connection.execute(
-            "SELECT 1 FROM safety_events WHERE event='budget_limit_blocked' AND limit_name='daily_budget_usd' AND timestamp>=? AND timestamp<? LIMIT 1",
+        rows = connection.execute(
+            "SELECT details_json FROM safety_events WHERE event='budget_limit_blocked' AND limit_name='daily_budget_usd' AND timestamp>=? AND timestamp<?",
             (start, end),
-        ).fetchone() is not None
+        ).fetchall()
+    for row in rows:
+        details = json.loads(row["details_json"] or "{}")
+        maximum = details.get("maximum")
+        if daily_budget_usd is None or maximum is None:
+            return True
+        try:
+            if abs(float(maximum) - float(daily_budget_usd)) < 1e-9:
+                return True
+        except (TypeError, ValueError):
+            continue
+    return False
 
 
 def consume_screening_rate_limit(

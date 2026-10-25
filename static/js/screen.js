@@ -48,7 +48,7 @@
     messages.scrollTop = messages.scrollHeight;
     const total = Math.max(1, state.question_total || 1);
     const question = Math.min(total, Math.max(1, state.question_number || 1));
-    document.getElementById("progress-label").textContent = `Question ${question} of ${total}`;
+    document.getElementById("question-count").textContent = `Question ${question} of ${total}`;
     const percent = Math.round(((question - 1) / total) * 100);
     const track = document.querySelector(".progress-track");
     track.setAttribute("aria-valuenow", String(percent));

@@ -2,7 +2,7 @@
 {% block title %}Candidate screening — Eligibl{% endblock %}
 {% block content %}
   <section class="screening-shell" data-screening-app>
-    <header class="screen-brandline"><a href="{{ url_for('main.index') }}"><img src="{{ url_for('static', filename='img/eligibl-logo.svg') }}" alt="eligibl"></a><span>{{ protocol.study_title if protocol else 'Study screening' }}</span></header>
+    <header class="screen-brandline"><a href="{{ url_for('main.index') }}"><img src="{{ url_for('static', filename='img/eligibl-logo.svg') }}" alt="eligibl"></a><span class="screen-study-name">{{ protocol.study_title if protocol else 'Study screening' }}</span><a class="screen-switch-link" href="{{ url_for('main.coordinator') }}">Coordinator workspace <span aria-hidden="true">↗</span></a></header>
     <p class="eyebrow">A calm first step · Demo</p>
     <h1>Let's check a few things</h1>
     {% if protocol_error %}<p class="notice" role="alert">{{ protocol_error }}</p>{% endif %}
@@ -32,7 +32,7 @@
       <p id="safety-notice" class="chat-safety-notice" role="status" hidden></p>
       <p class="pinned-disclaimer">A few questions to help the study team review your information. This is not medical advice.</p>
       <div class="chat-topline">
-        <div><p class="chat-kicker">Your screening chat</p><p id="progress-label" class="progress-label">Question 1 of 1 <span>· About 3 min left</span></p><span id="screening-status" class="chat-status" hidden>Flagged · coordinator review</span></div>
+        <div><p class="chat-kicker">Your screening chat</p><p class="progress-label"><span id="question-count">Question 1 of 1</span> <span class="time-estimate">· About 3 min left</span></p><span id="screening-status" class="chat-status" hidden>Flagged · coordinator review</span></div>
         <a href="{{ url_for('main.index') }}" class="chat-exit">Exit</a>
       </div>
       <div class="progress-track" role="progressbar" aria-label="Screening progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="progress-fill"></span></div>
