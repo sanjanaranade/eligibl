@@ -114,7 +114,12 @@ def reset_and_seed_demo_dashboard(
     Model-call cost records are retained. Three clearly eligible personas receive
     coordinator override/approval examples and unqueued, unsent sample email drafts.
     """
-    backup = backup_database(database, backup_dir)
+    db.init_db(database)
+    with db.session(database) as connection:
+        has_participant_records = connection.execute(
+            "SELECT EXISTS(SELECT 1 FROM candidates)"
+        ).fetchone()[0]
+    backup = backup_database(database, backup_dir) if has_participant_records else None
     clear_participant_records(database)
     seeded = seed_demo_dashboard(
         database,
@@ -165,6 +170,44 @@ def reset_and_seed_demo_dashboard(
         "queued": sum(draft["status"] == "queued" for draft in db.get_email_drafts(database)),
         "statuses": dict(sorted(statuses.items())),
     }
+
+
+def seed_demo_dashboard_if_empty(
+    database: str | Path = DEFAULT_DATABASE,
+    *,
+    backup_dir: str | Path = BACKUP_DIR,
+    personas_path: str | Path = PERSONAS_PATH,
+    protocol_path: str | Path = PROTOCOL_PATH,
+    safety_log: str | Path = SAFETY_LOG_PATH,
+) -> dict[str, Any]:
+    """Preload the demo only for a database with no candidate records.
+
+    Existing participant data is never cleared or replaced by this startup
+    helper. The normal reset command remains explicit and separately backed up.
+    """
+    db.init_db(database)
+    with db.session(database) as connection:
+        has_candidates = bool(
+            connection.execute("SELECT EXISTS(SELECT 1 FROM candidates)").fetchone()[0]
+        )
+    if has_candidates:
+        candidates = db.coordinator_candidates(database)
+        return {
+            "seeded": False,
+            "total": len(candidates),
+            "approved": sum(row["coordinator_status"] == "approved" for row in candidates),
+            "drafts": len(db.get_email_drafts(database)),
+            "queued": sum(draft["status"] == "queued" for draft in db.get_email_drafts(database)),
+        }
+
+    result = reset_and_seed_demo_dashboard(
+        database,
+        backup_dir=backup_dir,
+        personas_path=personas_path,
+        protocol_path=protocol_path,
+        safety_log=safety_log,
+    )
+    return {**result, "seeded": True}
 
 
 def main() -> None:

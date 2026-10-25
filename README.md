@@ -83,17 +83,11 @@ Open these pages in your browser:
 - Coordinator dashboard: <http://127.0.0.1:5050/coordinator>
 - Health check: <http://127.0.0.1:5050/health>
 
-The health check should return JSON with `"ok": true` and `"model": "gpt-6-luna"`. `"api_key_found": true` means the environment variable was detected; it does not print or validate the key itself. The first app launch creates the local SQLite file at `data/eligibl.sqlite3`; this database is ignored by Git.
+The health check should return JSON with `"ok": true` and `"model": "gpt-6-luna"`. `"api_key_found": true` means the environment variable was detected; it does not print or validate the key itself. On first launch, the app creates the local SQLite file at `data/eligibl.sqlite3` and automatically preloads 24 clearly labeled synthetic example screenings, including three coordinator-approved examples and nine sample email drafts. This is offline setup: it makes no model calls, and the drafts are not queued or sent. Automatic seeding happens only if the database has no candidates; later launches preserve existing records. The database itself is ignored by Git.
 
-### Optional: load synthetic dashboard examples
+### Optional: deliberately reset the local demo data
 
-A fresh database has no candidate rows until someone runs a screening. To load the 24 fictional candidates and sample drafts for a demo, run this **once** from the repo folder, before or after starting the app:
-
-```sh
-python -m scripts.reset_demo_dashboard
-```
-
-Use `.venv/bin/python -m scripts.reset_demo_dashboard` on macOS/Linux or `.venv\Scripts\python.exe -m scripts.reset_demo_dashboard` on Windows if the venv is not activated. This is a demo reset: it replaces participant-linked records in the local database, makes a backup under the ignored `data/backups/` folder, and creates synthetic examples only. Do not run it against a database whose participant records you need to keep. The sample email drafts are not sent.
+No seed command is needed for a fresh clone: the first normal app launch seeds the examples automatically. If you intentionally want to replace the local candidate-linked records with the original 24 synthetic examples, run `python -m scripts.reset_demo_dashboard` from the repo folder. This explicit reset first backs up the existing database under the ignored `data/backups/` folder and retains model-call cost history. Do not use it if you need to keep existing participant records. The reset creates synthetic examples only, makes no model calls, and leaves all sample email drafts unqueued and unsent.
 
 ### Common startup issues
 
