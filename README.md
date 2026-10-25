@@ -2,32 +2,106 @@
 
 Eligibl is a prototype where prospective participants answer study questions and research coordinators review the evidence against study criteria. It is being built for MGT 409, AI Foundations for Managers (Yale, Fall 2026). All candidate data is synthetic.
 
-## Run locally
+## Run locally (grader quick start)
 
-1. Create and activate a virtual environment:
+Eligibl runs locally; it does not need hosting, Docker, Node, a separate database server, or a build step. It uses Python, Flask, SQLite (included with Python), and the Portkey API. Use Python 3.10 or newer and an internet connection for model-powered screening.
 
-   ```sh
-   python3 -m venv .venv
-   source .venv/bin/activate
-   ```
+### 1. Clone the repo
 
-2. Install pinned dependencies:
+If you are cloning it yourself, open a terminal in the folder where you keep projects and run:
 
-   ```sh
-   pip install -r requirements.txt
-   ```
+```sh
+git clone https://github.com/sanjanaranade/eligibl.git
+cd eligibl
+```
 
-3. Set `PORTKEY_API_KEY` in a `.env` file. The app checks the repository root first, then the parent folder. The teaching staff can place `.env` beside the cloned repository. Never commit `.env`; `.env.example` lists the required key name.
+If the course staff already cloned the submission, open a terminal in the cloned `eligibl` folder instead. The commands below should be run from the folder containing `app.py` and `requirements.txt`.
 
-4. Start the app:
+### 2. Check Python and create a virtual environment
 
-   ```sh
-   python app.py
-   ```
+macOS/Linux:
 
-5. Open <http://127.0.0.1:5050>.
+```sh
+python3 --version
+python3 -m venv .venv
+source .venv/bin/activate
+```
 
-The app uses `gpt-6-luna` through Portkey for model calls. The welcome page remains available when the key is missing and explains where to configure it. Check `/health` for app status and whether a key was found; it never returns the key itself.
+Windows PowerShell:
+
+```powershell
+py -3 --version
+py -3 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+If PowerShell blocks activation, use the venv's Python directly instead (shown in the install and run commands below). In Command Prompt, the activation command is `.venv\Scripts\activate.bat`.
+
+### 3. Install the pinned Python packages
+
+With the virtual environment activated, on any platform run:
+
+```sh
+python -m pip install -r requirements.txt
+```
+
+Or, without activating the environment, use `.venv/bin/python -m pip install -r requirements.txt` on macOS/Linux, or `.venv\Scripts\python.exe -m pip install -r requirements.txt` in Windows PowerShell. No other package manager or build command is required.
+
+### 4. Make the Portkey key available
+
+Model-powered screening uses the course-approved `gpt-6-luna` model through Portkey and requires the environment variable named exactly `PORTKEY_API_KEY`.
+
+The app checks for `.env` in **two places, in this order**: first in the `eligibl` repo folder, then one folder above the repo. The course staff's key file can therefore sit beside the cloned repo, like this:
+
+```text
+submissions/
+├── .env                 # provided by course staff; contains PORTKEY_API_KEY
+└── eligibl/             # cloned repo; run the app from here
+    ├── app.py
+    ├── .env.example      # key name only; no secret value
+    └── requirements.txt
+```
+
+When testing with your own key, you may instead put it in a local `.env` in the repo folder. Never paste a key into chat, commit `.env`, or replace the staff's parent `.env`. `.env.example` is only a list of required variable names; do not rename it to `.env` expecting it to contain a working key. The `.env` file is ignored by Git.
+
+The app can start without a key, and `/health` reports whether a key was found without revealing it, but starting a screening or using AI features requires a valid key and an internet connection to Portkey. API calls use the course key and model budget; all example participant data is synthetic.
+
+### 5. Start Eligibl
+
+With the virtual environment activated:
+
+```sh
+python app.py
+```
+
+Without activation, run `.venv/bin/python app.py` on macOS/Linux or `.venv\Scripts\python.exe app.py` in Windows PowerShell. The app runs with debug mode off at <http://127.0.0.1:5050>. Leave this terminal open while using it, then press `Ctrl+C` there to stop the server.
+
+Open these pages in your browser:
+
+- Welcome: <http://127.0.0.1:5050/>
+- Participant screening: <http://127.0.0.1:5050/screen>
+- Coordinator dashboard: <http://127.0.0.1:5050/coordinator>
+- Health check: <http://127.0.0.1:5050/health>
+
+The health check should return JSON with `"ok": true` and `"model": "gpt-6-luna"`. `"api_key_found": true` means the environment variable was detected; it does not print or validate the key itself. The first app launch creates the local SQLite file at `data/eligibl.sqlite3`; this database is ignored by Git.
+
+### Optional: load synthetic dashboard examples
+
+A fresh database has no candidate rows until someone runs a screening. To load the 24 fictional candidates and sample drafts for a demo, run this **once** from the repo folder, before or after starting the app:
+
+```sh
+python -m scripts.reset_demo_dashboard
+```
+
+Use `.venv/bin/python -m scripts.reset_demo_dashboard` on macOS/Linux or `.venv\Scripts\python.exe -m scripts.reset_demo_dashboard` on Windows if the venv is not activated. This is a demo reset: it replaces participant-linked records in the local database, makes a backup under the ignored `data/backups/` folder, and creates synthetic examples only. Do not run it against a database whose participant records you need to keep. The sample email drafts are not sent.
+
+### Common startup issues
+
+- **`python` or `python3` is not found:** install Python 3.10+ and reopen the terminal. On Windows, use `py -3` in place of `python3`.
+- **`No module named flask` (or another dependency):** make sure the venv is activated, then rerun `python -m pip install -r requirements.txt` from the repo folder.
+- **Port 5050 is already in use:** another Eligibl process may already be running. Stop it with `Ctrl+C` in its server terminal, then retry. The app is configured for port 5050.
+- **The page says the key is missing:** confirm the staff `.env` is in the directory one level above `eligibl/` (or your own `.env` is in the repo), and that the variable name is exactly `PORTKEY_API_KEY`. Restart the app after changing `.env`. Never send the key in a screenshot or support message.
+- **The key is found but model calls fail:** `/health` checks only that a nonempty value was found. A provider authentication, network, or budget error may still prevent model calls; check the coordinator Safety log and verify network access without displaying the key.
 
 ## Development
 
