@@ -3,12 +3,13 @@
   <summary aria-label="View the currently selected study">
     <span class="study-picker-kicker">Current study</span>
     <span class="study-picker-title">{{ active_study.study_title }}</span>
+    {% if active_study.nct_id %}<span class="study-picker-summary-id">{{ active_study.nct_id }}</span>{% endif %}
     <span class="study-picker-chevron" aria-hidden="true">⌄</span>
   </summary>
   <div class="study-picker-panel">
     <span class="study-picker-kicker">Currently viewing</span>
     <strong>{{ active_study.study_title }}</strong>
-    {% if active_study.nct_id %}<a class="study-picker-id" href="https://clinicaltrials.gov/study/{{ active_study.nct_id|urlencode }}" target="_blank" rel="noopener noreferrer">View on ClinicalTrials.gov ↗</a>{% endif %}
+    {% if active_study.nct_id %}<a class="study-picker-id" href="https://clinicaltrials.gov/study/{{ active_study.nct_id|urlencode }}" target="_blank" rel="noopener noreferrer">{{ active_study.nct_id }} · View on ClinicalTrials.gov ↗</a>{% endif %}
     <p>This demo currently has one study loaded. This control shows which study is active.</p>
   </div>
 </details>

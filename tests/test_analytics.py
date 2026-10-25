@@ -97,14 +97,13 @@ def test_insights_route_and_dashboard_analytics_markup(tmp_path, monkeypatch):
     assert b"Summarize this week" in page.data
     assert b"analytics-fallback" in page.data
     assert b"chart.js" in page.data
-    assert b"analytics.js?v=contrast-3" in page.data
+    assert b"analytics.js?v=contrast-5" in page.data
     chart_source = (REPO_ROOT / "static" / "js" / "analytics.js").read_text(encoding="utf-8")
     assert 'color: "#514B46"' in chart_source
     assert '"#0F5F5C"' in chart_source and '"#B85C16"' in chart_source
-    assert "scales.y.ticks.font = { size: 10, weight: 600 };" in chart_source
-    assert "labels.map((item) => wrapLabel(item))" in chart_source
-    assert "scales.y.ticks.autoSkip = false" in chart_source
-    assert "chart-tall" in chart_source
+    assert "scales.y.ticks.font = { size: 9, weight: 600 };" in chart_source
+    assert "wrapLabel" not in chart_source
+    assert "chart-tall" not in chart_source
     monkeypatch.setattr("eligibl.routes.main.api_key_found", lambda: True)
     monkeypatch.setattr(insights, "summarize_week", lambda database, timezone: {
         "summary": "The cohort is small this week. No dominant criterion failures appeared. Consider gathering more observations before changing operations.",

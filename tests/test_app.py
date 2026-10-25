@@ -52,6 +52,7 @@ def test_all_initial_pages_include_synthetic_footer(tmp_path):
     assert b"Current study" in screen_page.data
     assert b"NCT07497698" in screen_page.data
     assert b"https://clinicaltrials.gov/study/NCT07497698" in screen_page.data
+    assert b'class="study-picker-summary-id">NCT07497698</span>' in screen_page.data
     assert b"Start another demo screening" in screen_page.data
 
 
@@ -75,6 +76,7 @@ def test_coordinator_dashboard_and_safety_pages_render_with_navigation(tmp_path)
         assert b"Current study" in response.data
         assert b"NCT07497698" in response.data
         assert b"https://clinicaltrials.gov/study/NCT07497698" in response.data
+        assert b'class="study-picker-summary-id">NCT07497698</span>' in response.data
 
 
 def test_coordinator_detail_and_reason_required_override(tmp_path):

@@ -12,21 +12,6 @@
       y: { ticks: { color: "#514B46", font: { size: 12, weight: 600 } }, grid: { color: "#E7E5E4" } },
     },
   };
-  const wrapLabel = (text, maxLength = 24) => {
-    const lines = [];
-    let line = "";
-    for (const word of text.split(/\s+/)) {
-      const next = line ? `${line} ${word}` : word;
-      if (line && next.length > maxLength) {
-        lines.push(line);
-        line = word;
-      } else {
-        line = next;
-      }
-    }
-    if (line) lines.push(line);
-    return lines;
-  };
   const renderChart = (canvasId, table, labels, values, label, color, horizontal = false) => {
     const canvas = document.getElementById(canvasId);
     if (!canvas || !window.Chart) return;
@@ -35,18 +20,11 @@
         x: { ...chartOptions.scales.x, ticks: { ...chartOptions.scales.x.ticks } },
         y: { ...chartOptions.scales.y, ticks: { ...chartOptions.scales.y.ticks } },
       };
-      const chartLabels = horizontal ? labels.map((item) => wrapLabel(item)) : labels;
-      if (horizontal) {
-        scales.y.ticks.font = { size: 10, weight: 600 };
-        scales.y.ticks.autoSkip = false;
-        canvas.classList.add("chart-tall");
-        const neededHeight = chartLabels.reduce((sum, lines) => sum + Math.max(1, lines.length) * 18 + 8, 0);
-        canvas.style.height = `${Math.max(250, neededHeight + 20)}px`;
-      }
+      if (horizontal) scales.y.ticks.font = { size: 9, weight: 600 };
       new window.Chart(canvas, {
         type: horizontal ? "bar" : "bar",
-        data: { labels: chartLabels, datasets: [{ label, data: values, backgroundColor: color, borderRadius: 5 }] },
-        options: { ...chartOptions, scales, indexAxis: horizontal ? "y" : "x", maintainAspectRatio: !horizontal },
+        data: { labels, datasets: [{ label, data: values, backgroundColor: color, borderRadius: 5 }] },
+        options: { ...chartOptions, scales, indexAxis: horizontal ? "y" : "x" },
       });
       table.hidden = true;
     } catch (_error) {
