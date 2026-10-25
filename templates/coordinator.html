@@ -21,7 +21,8 @@
     </div>
   </aside>
   <section class="coord-main">
-    <header class="coord-header"><div><p class="eyebrow">STUDY OPERATIONS</p><h1>Good morning, coordinator</h1><p>{{ study_title or 'Your study' }} · Review every screening before taking action.</p></div><a class="button" href="{{ url_for('main.coordinator_protocol') }}">View study protocol</a></header>
+    <header class="coord-header"><div><p class="eyebrow">STUDY OPERATIONS</p><h1>Hello, coordinator</h1><p>{{ study_title or 'Your study' }} · Review every screening before taking action.</p></div><a class="button" href="{{ url_for('main.coordinator_protocol') }}">View study protocol</a></header>
+    {% if demo_seeded_count %}<aside class="demo-seed-banner" role="note"><strong>{{ demo_seeded_count }} synthetic demo screenings</strong><span>Preloaded examples from fictional personas; no real participants or live model calls.</span></aside>{% endif %}
     {% if budget_pause %}<aside class="budget-pause-banner" role="status"><strong>Screening is paused for today.</strong><span>The ${{ '%.2f'|format(budget) }} daily AI-call budget blocked a request. Candidates should try again tomorrow.</span><a href="{{ url_for('main.coordinator_safety') }}">View safety log</a></aside>{% endif %}
     <section class="eyes-card"><div class="eyes-icon">!</div><div><strong>Needs your eyes</strong><p>Screenings needing review or a coordinator flag</p></div><strong class="eyes-count" id="needs-eyes-count">{{ candidates|selectattr('display_status','in',['Needs review','Flagged'])|list|length }}</strong></section>
     <section class="metric-grid" aria-label="Screening metrics">

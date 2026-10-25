@@ -3,10 +3,9 @@
 {% block content %}
   <section class="welcome">
     <div class="welcome-hero-art" aria-hidden="true"><svg class="pathway-art" viewBox="0 0 520 220"><path d="M8 172C110 172 82 35 210 48s90 130 190 110 84-102 116-111"/></svg><span class="organic-blob blob-one"></span><span class="organic-blob blob-two"></span></div>
-    <a class="welcome-brand" href="{{ url_for('main.index') }}" aria-label="Eligibl home"><img src="{{ url_for('static', filename='img/eligibl-logo.svg') }}" alt="Eligibl — for coordinators and prospective participants."></a>
-    <p class="eyebrow">Clinical research, made clearer</p>
+    <a class="welcome-brand" href="{{ url_for('main.index') }}" aria-label="Eligibl home"><img src="{{ url_for('static', filename='img/eligibl-logo.svg') }}" alt="Eligibl — clinical research, made clearer."></a>
     <h1>The right people,<br>the right study.</h1>
-    <p class="lede">Participants get clear questions about a study; coordinators get evidence-backed information to review. A person stays in control.</p>
+    <p class="lede">Clear answers for participants. Evidence-backed reviews for coordinators.</p>
     {% if not has_api_key %}
       <p class="notice" role="status">Model screening is not configured yet. Add <code>PORTKEY_API_KEY</code> to a <code>.env</code> file in this project folder or its parent folder.</p>
     {% endif %}

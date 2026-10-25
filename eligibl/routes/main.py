@@ -75,6 +75,7 @@ def coordinator():
         "coordinator.html", candidates=candidates, usage=usage,
         budget=limits["daily_budget_usd"], analytics=stats,
         study_title=study_title,
+        demo_seeded_count=sum(row["id"].startswith("demo-SYN") for row in candidates),
         budget_pause=daily_budget_blocked_today(current_app.config["DATABASE"], limits["timezone"], limits["daily_budget_usd"]),
     )
 

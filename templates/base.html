@@ -14,7 +14,7 @@
 </head>
 <body>
   {% if request.endpoint and request.endpoint.startswith('main.coordinator') %}<a class="view-switch" href="{{ url_for('main.screen') }}">Participant preview <span aria-hidden="true">↗</span></a>{% endif %}
-  <header class="site-header"><a class="wordmark" href="{{ url_for('main.index') }}" aria-label="Eligibl home"><img src="{{ url_for('static', filename='img/eligibl-logo.svg') }}" alt="Eligibl — for coordinators and prospective participants."></a></header>
+  <header class="site-header"><a class="wordmark" href="{{ url_for('main.index') }}" aria-label="Eligibl home"><img src="{{ url_for('static', filename='img/eligibl-logo.svg') }}" alt="Eligibl — clinical research, made clearer."></a></header>
   <main class="page {% block page_class %}{% endblock %}">{% block content %}{% endblock %}</main>
   <footer>Demo · synthetic data only</footer>
 </body>

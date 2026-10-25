@@ -266,6 +266,7 @@ body:has(.coordinator-page) footer { background:var(--cream); border-color:var(-
 .study-picker-panel { display:grid; gap:.4rem; padding:.8rem; border:1px solid #DCE5DF; border-radius:11px; background:white; box-shadow:0 8px 20px #29252412; }
 .study-picker-panel strong { color:var(--ink); font-size:.82rem; line-height:1.4; }
 .study-picker-id { color:var(--teal); font-size:.72rem; font-weight:650; }
+.study-picker-panel a { width:fit-content; text-decoration:underline; text-underline-offset:2px; }
 .study-picker-panel p { margin:0; color:var(--muted); font-size:.72rem; line-height:1.5; }
 .study-picker-sidebar { margin:0 0 1.2rem; }
 .coord-sidebar nav { position:relative; gap:.3rem; }
@@ -325,6 +326,7 @@ body:has(.coordinator-page) footer { background:var(--cream); border-color:var(-
 .safety-counter { border-color:var(--line); background:white; color:var(--muted); }.safety-counter strong { color:var(--teal); }
 .safety-table-wrap,.safety-table { color:#514B46; }.safety-table th,.safety-table td { border-color:var(--line); }.safety-table th { color:var(--teal); }.safety-table a { color:var(--teal); }.safety-table .offending-text { color:var(--muted); }
 .budget-pause-banner { border-color:#EBD0CC; background:var(--brick); color:#68403C; }.budget-pause-banner strong { color:var(--brick-ink); }.budget-pause-banner a { color:var(--teal); }
+.demo-seed-banner { display:flex; flex-wrap:wrap; gap:.25rem .6rem; align-items:baseline; margin:0 0 1rem; padding:.75rem 1rem; border:1px solid #D8E4DF; border-radius:12px; background:#F1F6F3; color:var(--muted); font-size:.8rem; }.demo-seed-banner strong { color:var(--teal); }
 .draft-candidate-group > header { border-color:var(--line); background:#F6F3EE; }.email-draft-card { background:white; }.draft-type { color:var(--teal); }
 .email-preview { border-color:var(--line); border-radius:12px; background:#FFFEFC; box-shadow:none; }.email-brand { display:flex; align-items:center; justify-content:space-between; padding:0 0 .65rem; border-color:var(--line); color:var(--teal); }.email-brand img { width:125px; }.email-brand span { color:var(--muted); }
 .email-preview label { color:#625B55; }.email-preview input,.email-preview textarea { border-color:#DDD8D2; border-radius:8px; color:var(--ink); }.email-preview input:focus,.email-preview textarea:focus { outline:3px solid #F4A26166; }.email-preview input:disabled,.email-preview textarea:disabled { background:#F5F3F0; color:#625B55; }.draft-schedule,.draft-schedule time { color:var(--muted); }.draft-feedback { color:var(--brick-ink); }

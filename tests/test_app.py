@@ -13,9 +13,9 @@ def test_homepage_has_two_entry_cards_and_synthetic_footer(tmp_path):
     assert b"The right people," in response.data
     assert b"participants" in response.data.lower()
     assert b'class="welcome-brand" href="/"' in response.data
-    assert b"for coordinators and prospective participants" in response.data.lower()
+    assert b"clinical research, made clearer" in response.data.lower()
     logo = app.test_client().get("/static/img/eligibl-logo.svg")
-    assert b"FOR COORDINATORS &amp; FUTURE PARTICIPANTS" in logo.data
+    assert b"CLINICAL RESEARCH, MADE CLEARER" in logo.data
     assert b"Demo \xc2\xb7 synthetic data only" in response.data
 
 
@@ -50,6 +50,7 @@ def test_all_initial_pages_include_synthetic_footer(tmp_path):
     assert b'class="screen-brandline"' in screen_page.data
     assert b"Current study" in screen_page.data
     assert b"NCT07497698" in screen_page.data
+    assert b"https://clinicaltrials.gov/study/NCT07497698" in screen_page.data
     assert b"Start another demo screening" in screen_page.data
 
 
@@ -65,11 +66,14 @@ def test_coordinator_dashboard_and_safety_pages_render_with_navigation(tmp_path)
         assert b"Participant preview" in response.data
         assert b'href="/screen"' in response.data
         if path == "/coordinator":
+            assert b"Hello, coordinator" in response.data
+            assert b"Good morning, coordinator" not in response.data
             assert response.data.count(b'class="view-switch"') == 1
             assert b"coord-header-actions" not in response.data
         assert b'class="coord-brand" href="/"' in response.data
         assert b"Current study" in response.data
         assert b"NCT07497698" in response.data
+        assert b"https://clinicaltrials.gov/study/NCT07497698" in response.data
 
 
 def test_coordinator_detail_and_reason_required_override(tmp_path):

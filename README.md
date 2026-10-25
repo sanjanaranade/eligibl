@@ -1,6 +1,6 @@
 # Eligibl
 
-Eligibl is a prototype for clinical research coordinators to review candidate screening against study criteria. It is being built for MGT 409, AI Foundations for Managers (Yale, Fall 2026). All candidate data is synthetic.
+Eligibl is a prototype where prospective participants answer study questions and research coordinators review the evidence against study criteria. It is being built for MGT 409, AI Foundations for Managers (Yale, Fall 2026). All candidate data is synthetic.
 
 ## Run locally
 
@@ -43,6 +43,8 @@ Budget preflight estimates prompt tokens from half the serialized UTF-8 byte cou
 The coordinator workspace includes a Protocol page at `/coordinator/protocol`. It parses the supplied ClinicalTrials.gov eligibility text into a validated, plain-language checklist, preserves source wording, marks criteria requiring clinic confirmation, and caches the result in `data/protocol.json` until the source file changes. Use **Re-parse protocol** to refresh it manually. This protocol parsing step does not make eligibility decisions. The synthetic candidate chat is available at `/screen`; it stores messages and criterion-level evidence in SQLite, asks one question at a time, and skips clinic-check criteria. Candidate-facing screens never display an eligibility result; a separate deterministic coordinator-only status is computed in code after verification. Outreach is draft-only and never sent. The completion UI notes that this demo does not send email or contact anyone.
 
 The coordinator dashboard also reports analytics for screenings completed in the last seven days: stage counts and stage-to-stage conversion, most frequent not-satisfied criteria, and average turns, tokens, and model cost per completed screening. Today's token and estimated-cost totals use the configured timezone. These are aggregate statistics only. Chart.js is loaded from a CDN for charts; the same values remain available in plain HTML tables when the CDN is unavailable. **Summarize this week** runs Agent 5, which has exactly one registered tool (`get_funnel_stats`) and receives no candidate IDs, names, transcripts, or other candidate-level rows. It returns a validated 3–4 sentence PI summary and its call is recorded by the common model logger.
+
+To preload the local coordinator dashboard with the 24 fictional personas, run `.venv/bin/python -m scripts.seed_demo_dashboard` (or activate the virtual environment and run `python -m scripts.seed_demo_dashboard`). It is safe to run more than once: existing `demo-SYN...` records are skipped, and other saved sessions are preserved. These example transcripts are generated from fictional persona facts without live model calls; the dashboard labels them clearly. No coordinator approvals or contact actions are fabricated.
 
 ## Safety
 
