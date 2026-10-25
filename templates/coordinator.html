@@ -20,7 +20,7 @@
     </div>
   </aside>
   <section class="coord-main">
-    <header class="coord-header"><div><p class="eyebrow">STUDY OPERATIONS</p><h1>Good morning, coordinator</h1><p>{{ study_title or 'Your study' }} · Review every screening before taking action.</p></div><div class="coord-header-actions"><a class="button secondary" href="{{ url_for('main.screen') }}">Participant preview <span aria-hidden="true">↗</span></a><a class="button" href="{{ url_for('main.coordinator_protocol') }}">View study protocol</a></div></header>
+    <header class="coord-header"><div><p class="eyebrow">STUDY OPERATIONS</p><h1>Good morning, coordinator</h1><p>{{ study_title or 'Your study' }} · Review every screening before taking action.</p></div><a class="button" href="{{ url_for('main.coordinator_protocol') }}">View study protocol</a></header>
     {% if budget_pause %}<aside class="budget-pause-banner" role="status"><strong>Screening is paused for today.</strong><span>The ${{ '%.2f'|format(budget) }} daily AI-call budget blocked a request. Candidates should try again tomorrow.</span><a href="{{ url_for('main.coordinator_safety') }}">View safety log</a></aside>{% endif %}
     <section class="eyes-card"><div class="eyes-icon">!</div><div><strong>Needs your eyes</strong><p>Screenings needing review or a coordinator flag</p></div><strong class="eyes-count" id="needs-eyes-count">{{ candidates|selectattr('display_status','in',['Needs review','Flagged'])|list|length }}</strong></section>
     <section class="metric-grid" aria-label="Screening metrics">

@@ -54,6 +54,9 @@ def test_coordinator_dashboard_and_safety_pages_render_with_navigation(tmp_path)
         assert b"Demo \xc2\xb7 synthetic data only" in response.data
         assert b"Participant preview" in response.data
         assert b'href="/screen"' in response.data
+        if path == "/coordinator":
+            assert response.data.count(b'class="view-switch"') == 1
+            assert b"coord-header-actions" not in response.data
 
 
 def test_coordinator_detail_and_reason_required_override(tmp_path):
